@@ -5,5 +5,5 @@ trait DAO {
    * Gets articles from Source.
    * @return An Array containing full text of articles.
    */
-  def getArticles: Array[String]
+  def getArticles: Seq[String]
 }

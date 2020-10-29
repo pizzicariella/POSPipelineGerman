@@ -16,7 +16,7 @@ class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
   val collectionName = ConfigFactory.load().getString("app.collection")
 
-  override def getArticles: Array[String] = {
+  override def getArticles: Seq[String] = {
     val docs = getCollectionFromDb(db, collectionName, mongoClient)
       .find()
 
@@ -26,10 +26,13 @@ class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
     }
 
     results.map(doc => parseDocumentText(doc.toJson(), columns)
-          .toArray
           .map(entry => entry._2)
+          .toSeq
           .reduce(_+_))
-          .toArray
+
+    //val textRange = 1 to text.size
+
+    //textRange.zip(text)
   }
 
   def createClient(userName: String,
