@@ -6,7 +6,7 @@ import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import data.db.DbUtils._
 import json.JsonParser.parseDocumentText
 
-class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
+class DbDao() extends DAO{
 
   val userName = ConfigFactory.load().getString("app.user")
   val pw = ConfigFactory.load().getString("app.pw")
@@ -16,11 +16,11 @@ class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
   val collectionName = ConfigFactory.load().getString("app.collection")
 
-  override def getArticles: Seq[String] = {
+  override def getArticles(columns: Array[String], limit: Option[Int]): Seq[String] = {
     val docs = getCollectionFromDb(db, collectionName, mongoClient)
       .find()
 
-     val results = limit match {
+    val results = limit match {
       case Some(x) => docs.limit(x).results()
       case None => docs.results()
     }
@@ -29,13 +29,9 @@ class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
           .map(entry => entry._2)
           .toSeq
           .reduce(_+_))
-
-    //val textRange = 1 to text.size
-
-    //textRange.zip(text)
   }
 
-  def createClient(userName: String,
+  private def createClient(userName: String,
                    pw: String,
                    serverAddress: String,
                    port: String,
@@ -43,7 +39,7 @@ class DbDao(columns: Array[String], limit: Option[Int]) extends DAO{
     MongoClient("mongodb://"+userName+":"+pw+"@"+serverAddress+":"+port+"/"+db)
   }
 
-  def getCollectionFromDb(dbName: String,
+  private def getCollectionFromDb(dbName: String,
                           collectionName: String,
                           mongoClient: MongoClient): MongoCollection[Document] = {
     mongoClient.getDatabase(dbName).getCollection(collectionName)

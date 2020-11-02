@@ -11,17 +11,18 @@ object App {
       .builder()
       .appName("SparkNLPPlayground")
       .master("local[*]")
+      .config("spark.executor.memory", "12g")
+      .config("spark.driver.memory", "12g")
       .getOrCreate()
 
-    val dao = new DbDao(Array("title", "intro", "text"), Some(10))
-    val articles = dao.getArticles
+    val dao = new DbDao()
+    val articles = dao.getArticles(Array("title", "intro", "text"), None)
     println(articles.size)
 
     val posPipeline = new PosPipeline(sc)
     val annotations = posPipeline.runPipeline(articles)
-    annotations.select("finished_token", "finished_pos").show()
+    annotations.limit(10).select("finished_token", "finished_pos").show()
 
-    //TODO find out what results mean and how good they are
     //TODO write tests
   }
 }

@@ -15,5 +15,10 @@ libraryDependencies ++=Seq(
 
   "com.typesafe" % "config" % "1.4.1",
 
-  "io.spray" % "spray-json_2.11" % "1.3.3"
+  "io.spray" % "spray-json_2.11" % "1.3.3",
+
+  "org.scalactic" %% "scalactic" % "3.2.2",
+  "org.scalatest" %% "scalatest" % "3.2.2" % "test",
+
 )
+
