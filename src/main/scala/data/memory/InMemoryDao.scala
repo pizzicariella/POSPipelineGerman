@@ -6,13 +6,13 @@ import json.JsonParser.parseDocumentText
 
 import scala.io.Source
 
-class InMemoryDao() extends DAO{
+class InMemoryDao(val resourceFile: String) extends DAO{
 
-  val pathToArticleFile = ConfigFactory.load().getString("app.inmemoryfile")
+  //val pathToArticleFile = ConfigFactory.load().getString("app.inmemoryfile")
 
   override def getArticles(columns: Array[String], limit: Option[Int]): Seq[String] = {
 
-    val articles = readFile(pathToArticleFile)
+    val articles = readFile(resourceFile)
 
     val until = limit match {
       case Some(x) => x

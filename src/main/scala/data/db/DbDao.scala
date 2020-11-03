@@ -1,20 +1,18 @@
 package data.db
 
-import com.typesafe.config.ConfigFactory
 import data.DAO
 import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import data.db.DbUtils._
 import json.JsonParser.parseDocumentText
 
-class DbDao() extends DAO{
+class DbDao(val userName: String,
+            val pw: String,
+            val serverAddress: String,
+            val port: String,
+            val db: String,
+            val collectionName: String) extends DAO{
 
-  val userName = ConfigFactory.load().getString("app.user")
-  val pw = ConfigFactory.load().getString("app.pw")
-  val serverAddress = ConfigFactory.load().getString("app.server")
-  val port = ConfigFactory.load().getString("app.port")
-  val db = ConfigFactory.load().getString("app.db")
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
-  val collectionName = ConfigFactory.load().getString("app.collection")
 
   override def getArticles(columns: Array[String], limit: Option[Int]): Seq[String] = {
     val docs = getCollectionFromDb(db, collectionName, mongoClient)
