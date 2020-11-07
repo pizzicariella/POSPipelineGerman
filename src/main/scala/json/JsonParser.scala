@@ -15,4 +15,14 @@ object JsonParser {
             case _ => ""
         }))
   }
+
+  def parsePosTags(json: String): List[String] = {
+    val jsonAst = json.parseJson
+    val data = jsonAst.convertTo[Map[String, JsValue]]
+    data.map(entry => entry._2 match {
+      case JsArray(elements) => elements.toList.map(element => element.asInstanceOf[JsString].value)
+      case _ => List.empty
+    })
+      .head
+  }
 }

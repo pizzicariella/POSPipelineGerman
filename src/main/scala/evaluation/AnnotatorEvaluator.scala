@@ -1,7 +1,9 @@
 package evaluation
 
+//TODO refactor
 class AnnotatorEvaluator extends Evaluator {
 
+  //TODO should this method work with spark sql? (df)
   override def getAccuracy(annotated: List[List[String]], correct: List[List[String]]): Double = {
     val annosTotal = annotated.map(list => list.size).reduce(_+_)
     val annosCorrect = annotated.zip(correct)
