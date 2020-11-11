@@ -25,6 +25,7 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
   val tokenizer = new Tokenizer()
     .setInputCols(Array("sentence"))
     .setOutputCol("token")
+    .setSplitChars(Array(" "))
 
   /*val normalizer = new Normalizer()
     .setInputCols(Array("token"))

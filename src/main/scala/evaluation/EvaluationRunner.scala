@@ -5,8 +5,6 @@ import data.memory.InMemoryDao
 import json.JsonParser.parsePosTags
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
-
-import scala.collection.mutable
 import scala.io.Source
 
 object EvaluationRunner {
@@ -28,19 +26,25 @@ object EvaluationRunner {
 
     val posPipeline = new PosPipeline(sc)
     val annotations = posPipeline.runPipeline(articles)
-    val annoList = annotations
-      .select("finished_pos")
-      //TODO maybe the solution is, to not work with df for this small case?
-      //.map(row => row(0).asInstanceOf[mutable.ArrayBuffer[String]])
+    val tokenAndPos = annotations
+      .select("finished_token", "finished_pos")
+      .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))
       .collect()
       .toList
 
-    println(annoList)
+    println(tokenAndPos)
 
-    val posTags = readTestFile(testPosTags).map(line => parsePosTags(line))
-    val evaluator = new AnnotatorEvaluator
-    //val accuracy = evaluator.getAccuracy(annoList, posTags)
-    //println(accuracy)
+    val testAnnotations = annotations
+      .select("finished_pos")
+      .map(row => row.getSeq[String](0).toList)
+      .collect()
+      .toList
+
+    val correctPosTags = readTestFile(testPosTags).map(line => parsePosTags(line))
+    val evaluator = new PipelineEvaluator
+    val accuracy = evaluator.getAccuracy(testAnnotations, correctPosTags)
+    println("accuracy: "+accuracy)
+    println(evaluator.compare(testAnnotations, correctPosTags))
   }
 
   def readTestFile(path: String): List[String] = {
