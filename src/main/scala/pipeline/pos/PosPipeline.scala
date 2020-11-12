@@ -26,6 +26,11 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
     .setInputCols(Array("sentence"))
     .setOutputCol("token")
     .setSplitChars(Array(" "))
+    //.setSplitPattern("[ ]")
+    //.setContextChars(Array(".", "\"", ","))
+    .setSuffixPattern("([^\\s\\w\\ü\\ö\\ä\\ß]?)([^\\s\\w\\ü\\ö\\ä\\ß]*)\\z")
+    //.setInfixPatterns(Array("([\"]?)", "([\"]?)"))
+    //.setPrefixPattern("\\A([^\\s\\w]*)")
 
   /*val normalizer = new Normalizer()
     .setInputCols(Array("token"))
