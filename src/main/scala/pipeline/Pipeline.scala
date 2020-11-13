@@ -7,5 +7,5 @@ trait PipelineTrait {
    * Runs and/or trains the pipeline.
    * @return A DataFrame containing annotations.
    */
-  def runPipeline(articles: Seq[String]): DataFrame
+  def runPipeline(articles: Seq[String], replacePatternSplitChars: Option[String], replacement: Option[String]): DataFrame
 }

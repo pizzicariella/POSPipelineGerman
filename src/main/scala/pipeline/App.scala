@@ -28,7 +28,7 @@ object App {
     println(articles.size)
 
     val posPipeline = new PosPipeline(sc)
-    val annotations = posPipeline.runPipeline(articles)
+    val annotations = posPipeline.runPipeline(articles, Some(" "), Some(" "))
     annotations.select("finished_token", "finished_lemma", "finished_pos").show(truncate = false)
 
   }
