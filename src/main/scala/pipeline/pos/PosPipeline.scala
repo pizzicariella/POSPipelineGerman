@@ -27,14 +27,14 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
     .setInputCols(Array("sentence"))
     .setOutputCol("token")
     //.addSplitChars("\\.")
-    .setSuffixPattern("([^\\s\\w\\ü\\ö\\ä\\ß\\-]?)([^\\s\\w\\ü\\ö\\ä\\ß\\-]*)\\z")
+    .setSuffixPattern("([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)\\z")
     //.setSplitPattern("[ ]")
     //.setContextChars(Array("\"", ".", ",", "!", "?", ":"))
     //.setInfixPatterns(Array("([^\\s\\w\\ü\\ö\\ä\\ß\\-]?)", "([^\\s\\w\\ü\\ö\\ä\\ß\\-]*)"))
     //.setInfixPatterns(Array("([\\p{L}\\w]\\.{1})([\\p{L}\\w])"))
     //.setInfixPatterns(Array("((?:\\p{L}\\.)+)"))
     //.setInfixPatterns(Array("((?:\\p{L}+[^\\s\\p{L}]{1})+\\p{L}+)"))
-    //.setPrefixPattern("\\A([^\\s\\w]*)")
+    .setPrefixPattern("\\A([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)")
 
   println("explaination: "+tokenizer.explainParams())
 
