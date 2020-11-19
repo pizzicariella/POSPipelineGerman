@@ -93,7 +93,7 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
 
   //TODO refactor and change structur. Possible to create spark nlp annotator for text preprocessing?
   def preEditText(articlesDf: DataFrame): DataFrame = {
-    val replacedDf = articlesDf.withColumn("text", regexp_replace(articlesDf("text"), "(?<=[^A-Z])\\b\\.\\b", ". "))
+    val replacedDf = articlesDf.withColumn("text", regexp_replace(articlesDf("text"), "(?<=[^A-Z\\d])\\b\\.\\b", ". "))
     replacedDf.withColumn("text", regexp_replace(replacedDf("text"), "[„“]", "\""))
   }
 
