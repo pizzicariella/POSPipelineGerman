@@ -20,11 +20,7 @@ class InMemoryDao(val resourceFile: String) extends DAO{
     }
 
     val sliced = articles.slice(0, until)
-    sliced.map(doc => parseDocumentText(doc, columns)
-      .map(entry => entry._2)
-      .toSeq
-      .reduce(_+_))
-
+    sliced.map(doc => parseDocumentText(doc, columns))
   }
 
   private def readFile(path: String): List[String] = {

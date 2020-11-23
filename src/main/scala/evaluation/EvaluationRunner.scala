@@ -23,11 +23,12 @@ object EvaluationRunner {
 
     val dao = new InMemoryDao(articlesToEvaluate)
     val articles = dao.getArticles(Array("title", "intro", "text"), None)
+    println(articles)
 
     val posPipeline = new PosPipeline(sc)
     val annotations = posPipeline.runPipeline(articles, Some(" "), Some(" "))
     val tokenAndPos = annotations
-      .select("finished_token", "finished_pos")
+      .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))
       .collect()
       .toList

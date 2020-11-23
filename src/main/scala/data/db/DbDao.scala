@@ -23,11 +23,7 @@ class DbDao(val userName: String,
       case None => docs.results()
     }
 
-    //TODO maybe add whitespaces between text parts
-    results.map(doc => parseDocumentText(doc.toJson(), columns)
-          .map(entry => entry._2)
-          .toSeq
-          .reduce(_+_))
+    results.map(doc => parseDocumentText(doc.toJson(), columns))
   }
 
   private def createClient(userName: String,

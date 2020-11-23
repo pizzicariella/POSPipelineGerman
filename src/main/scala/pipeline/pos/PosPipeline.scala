@@ -41,23 +41,25 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
 
   println("explaination: "+tokenizer.explainParams())
 
-  /*val normalizer = new Normalizer()
+  //TODO nochmal evaluieren, ob pos tags besser mit oder ohne normalizer gefunden werden (zb Relativpronomen).
+  //bei großen Differenzen, die Punct tags hinterher rausfiltern
+  val normalizer = new Normalizer()
     .setInputCols(Array("token"))
     .setOutputCol("normalized")
 
   //auf den 1. blick nicht wirklich zufriedenstellend
-  val lemmatizer = LemmatizerModel
+  /*val lemmatizer = LemmatizerModel
     .load(lemmatizer_model)
     .setInputCols(Array("normalized"))
     .setOutputCol("lemma")*/
 
   val posTagger = PerceptronModel
     .load(pos_tagger_model)
-    .setInputCols(Array("sentence", "token"))
+    .setInputCols(Array("sentence", "normalized"))
     .setOutputCol("pos")
 
   val finisher = new Finisher()
-    .setInputCols("token", "pos")
+    .setInputCols("token", "normalized", "pos")
     .setCleanAnnotations(false)
     .setIncludeMetadata(false)
 
@@ -66,6 +68,7 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
       documentAssembler,
       sentenceDetector,
       tokenizer,
+      normalizer,
       posTagger,
       finisher
     ))
@@ -93,8 +96,8 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
 
   //TODO refactor and change structur. Possible to create spark nlp annotator for text preprocessing?
   def preEditText(articlesDf: DataFrame): DataFrame = {
-    val replacedDf = articlesDf.withColumn("text", regexp_replace(articlesDf("text"), "(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-    replacedDf.withColumn("text", regexp_replace(replacedDf("text"), "[„“]", "\""))
+    articlesDf.withColumn("text", regexp_replace(articlesDf("text"), "(?<=[^A-Z\\d])\\b\\.\\b", ". "))
+    //replacedDf.withColumn("text", regexp_replace(replacedDf("text"), "[„“]", "\""))
   }
 
 }

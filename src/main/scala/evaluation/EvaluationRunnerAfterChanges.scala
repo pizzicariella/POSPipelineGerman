@@ -28,7 +28,7 @@ object EvaluationRunnerAfterChanges {
     val posPipeline = new PosPipeline(sc)
     val annotations = posPipeline.runPipeline(article, Some(" "), Some(" "))
     val tokenAndPos = annotations
-      .select("finished_token", "finished_pos")
+      .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))
       .collect()
       .toList
