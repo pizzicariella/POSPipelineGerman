@@ -29,4 +29,11 @@ class InMemoryDao(val resourceFile: String) extends DAO{
     bufferedSource.close()
     lines
   }
+
+  /**
+   * Writes articles to destination.
+   *
+   * @param articles
+   */
+  override def writeArticles(articles: Seq[String]): Unit = ???
 }

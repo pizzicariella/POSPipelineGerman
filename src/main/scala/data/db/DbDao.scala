@@ -39,4 +39,11 @@ class DbDao(val userName: String,
                           mongoClient: MongoClient): MongoCollection[Document] = {
     mongoClient.getDatabase(dbName).getCollection(collectionName)
   }
+
+  /**
+   * Writes articles to destination.
+   *
+   * @param articles
+   */
+  override def writeArticles(articles: Seq[String]): Unit = ???
 }
