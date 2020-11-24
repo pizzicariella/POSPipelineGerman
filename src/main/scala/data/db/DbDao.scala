@@ -3,7 +3,7 @@ package data.db
 import data.DAO
 import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import data.db.DbUtils._
-import json.JsonParser.parseDocumentText
+import utils.json.JsonParser.parseRelevantAttributes
 
 class DbDao(val userName: String,
             val pw: String,
@@ -14,7 +14,7 @@ class DbDao(val userName: String,
 
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
 
-  override def getArticles(columns: Array[String], limit: Option[Int]): Seq[String] = {
+  override def getArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]] = {
     val docs = getCollectionFromDb(db, collectionName, mongoClient)
       .find()
 
@@ -23,7 +23,7 @@ class DbDao(val userName: String,
       case None => docs.results()
     }
 
-    results.map(doc => parseDocumentText(doc.toJson(), columns))
+    results.map(doc => parseRelevantAttributes(doc.toJson(), columns))
   }
 
   private def createClient(userName: String,

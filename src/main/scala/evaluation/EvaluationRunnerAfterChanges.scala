@@ -2,9 +2,10 @@ package evaluation
 
 import com.typesafe.config.ConfigFactory
 import data.memory.InMemoryDao
-import json.JsonParser.parsePosTags
+import utils.json.JsonParser.parsePosTags
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
+import utils.Utils
 
 import scala.io.Source
 
@@ -23,10 +24,13 @@ object EvaluationRunnerAfterChanges {
     import sc.implicits._
 
     val dao = new InMemoryDao(testArticle)
-    val article = dao.getArticles(Array("title", "intro", "text"), None)
+    val articleMaps = dao.getArticles(Array("id", "longUrl", "crawlTime", "title", "intro", "text"), None)
+    val articlesWithText =
+      articleMaps.map(map =>
+        Utils.getArticleWithCompleteText(map, Array("title", "intro", "text"), Array("id", "longUrl", "crawlTime")))
 
     val posPipeline = new PosPipeline(sc)
-    val annotations = posPipeline.runPipeline(article, Some(" "), Some(" "))
+    val annotations = posPipeline.runPipeline(articlesWithText, Some(" "), Some(" "))
     val tokenAndPos = annotations
       .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))

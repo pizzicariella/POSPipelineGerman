@@ -7,7 +7,7 @@ trait DAO {
    * limit: maximum number of articles
    * @return An Array containing full text of articles.
    */
-  def getArticles(columns: Array[String], limit: Option[Int]): Seq[String]
+  def getArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]]
 
   /**
    * Writes articles to destination.
