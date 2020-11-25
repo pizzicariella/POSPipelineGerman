@@ -6,7 +6,7 @@ case class AnalysedArticle(id: String,
                            longUrl: String,
                            crawlTime: BigDecimal,
                            text: String,
-                           annosPos: List[(Int, Int, String)]) {
+                           annosPos: Seq[(Int, Int, String)]) {
   def annosPosAsJsArray: Vector[JsArray] = annosPos.map(anno => JsArray(JsNumber(anno._1),
                                                                 JsNumber(anno._2),
                                                                 JsString(anno._3))).toVector

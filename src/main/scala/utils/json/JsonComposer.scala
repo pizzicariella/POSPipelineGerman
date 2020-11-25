@@ -8,7 +8,7 @@ object JsonComposer {
                                  longUrl: String,
                                  crawlTime: BigDecimal,
                                  text: String,
-                                 annosPos: List[(Int, Int, String)]): String =
+                                 annosPos: Seq[(Int, Int, String)]): String =
     AnalysedArticle(id, longUrl, crawlTime, text, annosPos)
       .toJson(AnalysedArticleJsonProtocol.AnalysedArticleJsonFormat)
       .compactPrint

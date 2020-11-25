@@ -31,9 +31,9 @@ class InMemoryDao(val resourceFile: String) extends DAO{
   }
 
   /**
-   * Writes articles to destination.
+   * Writes single article to destination.
    *
-   * @param articles
+   * @param articleJson
    */
-  override def writeArticles(articles: Seq[String]): Unit = ???
+  override def writeArticle(articleJson: String, destination: Array[String]): Unit = ???
 }

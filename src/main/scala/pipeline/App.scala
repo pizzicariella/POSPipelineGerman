@@ -5,6 +5,7 @@ import data.db.DbDao
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Utils
+import utils.json.JsonComposer
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -15,6 +16,14 @@ object App {
     val port = ConfigFactory.load().getString("app.port")
     val db = ConfigFactory.load().getString("app.db")
     val collectionName = ConfigFactory.load().getString("app.collection")
+
+    val targetUserName = ConfigFactory.load().getString("app.target_user")
+    val targetPw = ConfigFactory.load().getString("app.target_pw")
+    val targetServerAddress = ConfigFactory.load().getString("app.target_server")
+    val targetPort = ConfigFactory.load().getString("app.target_port")
+    val targetDb = ConfigFactory.load().getString("app.target_db")
+    val targetCollectionName = ConfigFactory.load().getString("app.target_collection")
+
 
     val sc: SparkSession = SparkSession
       .builder()
@@ -49,6 +58,18 @@ object App {
       )
       .collect()
       .toList
-    println(textWithPosAnnosList)
+    //println(textWithPosAnnosList)
+    val analysedArticleJsons = textWithPosAnnosList
+      .map(article =>
+        JsonComposer.composeAnalysedArticleJson(
+          article._1(0),
+          article._1(1),
+          BigDecimal(article._1(2)),
+          article._2,
+          article._3))
+    //println(analysedArticleJsons)
+
+    val dbParams = Array(targetServerAddress, targetPort, targetUserName, targetPw, targetDb, targetCollectionName)
+    analysedArticleJsons.foreach(json => dao.writeArticle(json, dbParams))
   }
 }

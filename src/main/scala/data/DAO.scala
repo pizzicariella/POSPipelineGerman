@@ -10,8 +10,8 @@ trait DAO {
   def getArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]]
 
   /**
-   * Writes articles to destination.
-   * @param articles
+   * Writes single article to destination.
+   * @param articleJson
    */
-  def writeArticles(articles: Seq[String])
+  def writeArticle(articleJson: String, destination: Array[String])
 }
