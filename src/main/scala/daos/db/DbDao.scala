@@ -1,8 +1,8 @@
-package data.db
+package daos.db
 
-import data.DAO
-import org.mongodb.scala.{Completed, Document, MongoClient, MongoCollection, Observer}
-import data.db.DbUtils._
+import daos.DAO
+import org.mongodb.scala.{Document, MongoClient, MongoCollection}
+import daos.db.DbUtils._
 import utils.json.JsonParser.parseRelevantAttributes
 
 //TODO refactor. dbdao should be usable for one db only or for multiple dbs but clarify.
@@ -10,20 +10,17 @@ class DbDao(val userName: String,
             val pw: String,
             val serverAddress: String,
             val port: String,
-            val db: String,
-            val collectionName: String) extends DAO{
+            val db: String) extends DAO{
 
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
 
-  override def getArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]] = {
-    val docs = getCollectionFromDb(db, collectionName, mongoClient)
-      .find()
+  override def getArticles(columns: Array[String], limit: Option[Int], collectionName: String): Seq[Map[String, Any]] = {
+    val docs = getCollectionFromDb(db, collectionName, mongoClient).find()
 
     val results = limit match {
       case Some(x) => docs.limit(x).results()
       case None => docs.results()
     }
-
     results.map(doc => parseRelevantAttributes(doc.toJson(), columns))
   }
 

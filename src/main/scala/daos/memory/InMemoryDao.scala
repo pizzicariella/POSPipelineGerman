@@ -1,7 +1,7 @@
-package data.memory
+package daos.memory
 
 import com.typesafe.config.ConfigFactory
-import data.DAO
+import daos.DAO
 import utils.json.JsonParser.parseRelevantAttributes
 
 import scala.io.Source
@@ -10,7 +10,7 @@ class InMemoryDao(val resourceFile: String) extends DAO{
 
   //val pathToArticleFile = ConfigFactory.load().getString("app.inmemoryfile")
 
-  override def getArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]] = {
+  override def getNewsArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]] = {
 
     val articles = readFile(resourceFile)
 

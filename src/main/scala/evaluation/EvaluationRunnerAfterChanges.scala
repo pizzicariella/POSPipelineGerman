@@ -1,7 +1,7 @@
 package evaluation
 
 import com.typesafe.config.ConfigFactory
-import data.memory.InMemoryDao
+import daos.memory.InMemoryDao
 import utils.json.JsonParser.parsePosTags
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
@@ -24,7 +24,7 @@ object EvaluationRunnerAfterChanges {
     import sc.implicits._
 
     val dao = new InMemoryDao(testArticle)
-    val articleMaps = dao.getArticles(Array("id", "longUrl", "crawlTime", "title", "intro", "text"), None)
+    val articleMaps = dao.getNewsArticles(Array("id", "longUrl", "crawlTime", "title", "intro", "text"), None)
     val articlesWithText =
       articleMaps.map(map =>
         Utils.getArticleWithCompleteText(map, Array("title", "intro", "text"), Array("id", "longUrl", "crawlTime")))

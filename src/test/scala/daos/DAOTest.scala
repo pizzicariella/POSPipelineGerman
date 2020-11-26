@@ -1,7 +1,7 @@
-package data
+package daos
 
 import com.typesafe.config.ConfigFactory
-import data.memory.InMemoryDao
+import daos.memory.InMemoryDao
 import org.scalatest.funsuite.AnyFunSuite
 
 class DAOTest extends AnyFunSuite{
@@ -11,9 +11,9 @@ class DAOTest extends AnyFunSuite{
 
   test("getArticles returns Seq with correct size"){
     val dao = new InMemoryDao(articleFile)
-    val result1 = dao.getArticles(columns, Some(20))
+    val result1 = dao.getNewsArticles(columns, Some(20))
     assert(result1.size === 20)
-    val result2 = dao.getArticles(columns, Some(200))
+    val result2 = dao.getNewsArticles(columns, Some(200))
     assert(result2.size === 100)
   }
 }

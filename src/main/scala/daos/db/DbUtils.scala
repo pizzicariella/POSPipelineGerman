@@ -1,4 +1,4 @@
-package data.db
+package daos.db
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.Await

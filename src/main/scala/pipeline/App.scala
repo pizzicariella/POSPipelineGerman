@@ -1,11 +1,13 @@
 package pipeline
 
 import com.typesafe.config.ConfigFactory
-import data.db.DbDao
+import daos.db.DbDao
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Utils
 import utils.json.JsonComposer
+import utils.json.JsonParser.parseRelevantAttributes
+
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -33,8 +35,9 @@ object App {
       .config("spark.driver.memory", "12g")
       .getOrCreate()
 
-    val dao = new DbDao(userName, pw, serverAddress, port, db, collectionName)
-    val articleMaps = dao.getArticles(Array("_id", "long_url", "crawl_time", "title", "intro", "text"), Some(20))
+    val dao = new DbDao(userName, pw, serverAddress, port, db)
+    val columns = Array("_id", "long_url", "crawl_time", "title", "intro", "text")
+    val articleMaps = dao.getNewsArticles(Some(20), collectionName)
     println(articleMaps.size)
     val articlesWithText =
       articleMaps.map(map =>
