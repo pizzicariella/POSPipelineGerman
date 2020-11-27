@@ -6,31 +6,30 @@ import utils.json.JsonParser.parsePosTags
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Utils
+import model.Strings
 
 import scala.io.Source
 
 object EvaluationRunner {
 
-  val articlesToEvaluate = ConfigFactory.load().getString("app.inmemoryfile_eval")
-  val testPosTags = ConfigFactory.load().getString("app.pos_tags_eval")
+  val articlesToEvaluate = ConfigFactory.load().getString(Strings.configEvalFile)
+  val testPosTags = ConfigFactory.load().getString(Strings.configEvalPosTags)
 
   def main(args: Array[String]): Unit = {
     val sc: SparkSession = SparkSession
       .builder()
-      .appName("SparkNLPPlayground")
-      .master("local[*]")
+      .appName(Strings.sparkParamsAppName)
+      .master(Strings.sparkParamsLocal)
       .getOrCreate()
 
     import sc.implicits._
 
-    val dao = new InMemoryDao(articlesToEvaluate)
-    val articleMaps = dao.getNewsArticles(Array("id", "longUrl", "crawlTime", "title", "intro", "text"), None)
-    val articlesWithText =
-      articleMaps.map(map =>
-        Utils.getArticleWithCompleteText(map, Array("title", "intro", "text"), Array("id", "longUrl", "crawlTime")))
+    val dao = new InMemoryDao()
+
+    val articles = dao.getNewsArticles(None, articlesToEvaluate).map(article => Utils.switchArticleFormat(article))
 
     val posPipeline = new PosPipeline(sc)
-    val annotations = posPipeline.runPipeline(articlesWithText, Some(" "), Some(" "))
+    val annotations = posPipeline.runPipeline(articles, Some(" "), Some(" "))
     val tokenAndPos = annotations
       .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))

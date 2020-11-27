@@ -1,6 +1,7 @@
 package daos
 
 import model.NewsArticle
+import utils.json.AnalysedArticle
 
 trait DAO {
   /**
@@ -12,8 +13,8 @@ trait DAO {
   def getNewsArticles(limit: Option[Int], source: String): Seq[NewsArticle]
 
   /**
-   * Writes single article to destination.
-   * @param articleJson
+   * Writes single analysed article to destination.
+   * @param article
    */
-  def writeArticle(articleJson: String, destination: Array[String])
+  def writeArticle(article: AnalysedArticle, destination: String)
 }

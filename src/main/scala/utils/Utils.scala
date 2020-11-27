@@ -1,5 +1,7 @@
 package utils
 
+import model.NewsArticle
+
 object Utils {
 
   //TODO how to handle non string columns?
@@ -7,6 +9,7 @@ object Utils {
                                  textColumns: Array[String],
                                  otherRelevantColumns: Array[String]): (Array[String], String) = {
 
+    //TODO add special char to distinguish title intro and text?
     val text = textColumns.map(columnName =>
       articleMap.getOrElse(columnName,
         throw new NoSuchElementException("The column " + columnName + " does not exist.")) match {
@@ -18,6 +21,10 @@ object Utils {
     (otherRelevantColumns.map(columnName =>
       articleMap.getOrElse(columnName,
         throw new NoSuchElementException("The column " + columnName + " does not exist.")).toString), text)
+  }
+
+  def switchArticleFormat(article: NewsArticle): (String, String, String, String) = {
+    (article.id, article.longUrl, article.crawlTime, article.title+" "+article.intro+" "+article.text)
   }
 
 

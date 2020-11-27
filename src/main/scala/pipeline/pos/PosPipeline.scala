@@ -73,7 +73,7 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
       finisher
     ))
 
-   override def runPipeline(articles: Seq[(Array[String], String)],
+   override def runPipeline(articles: Seq[(String, String, String, String)],
                             replacePatternSplitChars: Option[String],
                             replacement: Option[String]): DataFrame = {
     val data = articles.toDF("articleInfo", "text")

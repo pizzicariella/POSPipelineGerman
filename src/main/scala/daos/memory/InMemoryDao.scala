@@ -1,18 +1,16 @@
 package daos.memory
 
-import com.typesafe.config.ConfigFactory
 import daos.DAO
-import utils.json.JsonParser.parseRelevantAttributes
+import model.NewsArticle
+import utils.FileReader
+import utils.json.AnalysedArticle
+import utils.json.JsonParser.parseNewsArticle
 
-import scala.io.Source
+class InMemoryDao() extends DAO{
 
-class InMemoryDao(val resourceFile: String) extends DAO{
+  override def getNewsArticles(limit: Option[Int], file: String): Seq[NewsArticle] = {
 
-  //val pathToArticleFile = ConfigFactory.load().getString("app.inmemoryfile")
-
-  override def getNewsArticles(columns: Array[String], limit: Option[Int]): Seq[Map[String, Any]] = {
-
-    val articles = readFile(resourceFile)
+    val articles = FileReader.readJsonFile(file)
 
     val until = limit match {
       case Some(x) => x
@@ -20,20 +18,8 @@ class InMemoryDao(val resourceFile: String) extends DAO{
     }
 
     val sliced = articles.slice(0, until)
-    sliced.map(doc => parseRelevantAttributes(doc, columns))
+    sliced.map(doc => parseNewsArticle(doc))
   }
 
-  private def readFile(path: String): List[String] = {
-    val bufferedSource = Source.fromFile(path)
-    val lines = bufferedSource.getLines().toList
-    bufferedSource.close()
-    lines
-  }
-
-  /**
-   * Writes single article to destination.
-   *
-   * @param articleJson
-   */
-  override def writeArticle(articleJson: String, destination: Array[String]): Unit = ???
+  override def writeArticle(article: AnalysedArticle, destination: String): Unit = ???
 }
