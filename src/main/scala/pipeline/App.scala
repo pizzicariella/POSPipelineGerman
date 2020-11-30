@@ -6,7 +6,6 @@ import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Utils
 import utils.json.JsonComposer
-import utils.json.JsonParser.parseRelevantAttributes
 
 
 object App {
@@ -26,6 +25,8 @@ object App {
     val targetDb = ConfigFactory.load().getString("app.target_db")
     val targetCollectionName = ConfigFactory.load().getString("app.target_collection")
 
+    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
+
 
     val sc: SparkSession = SparkSession
       .builder()
@@ -43,8 +44,9 @@ object App {
       articleMaps.map(map =>
         Utils.getArticleWithCompleteText(map, Array("title", "intro", "text"), Array("_id", "long_url", "crawl_time")))
 
-    val posPipeline = new PosPipeline(sc)
-    val annotations = posPipeline.runPipeline(articlesWithText, Some(" "), Some(" "))
+    val posPipeline = new PosPipeline(sc, posModel)
+    val replacements = Map(" " -> " ", "(?<=[^A-Z\\d])\\b\\.\\b" -> ". ")
+    val annotations = posPipeline.runPipeline(articlesWithText, replacements)
     //annotations.select("finished_token", "finished_normalized", "finished_pos").show(truncate = false)
     val infoTextPosDf = annotations.select("articleInfo", "text", "pos")
     //infoTextPosDf.show(false)
