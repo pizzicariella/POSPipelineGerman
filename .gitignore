@@ -2,4 +2,4 @@ project/
 .idea
 .bsp
 target/
-/src/main/resources/configuration/application.conf
+/src/main/resources/application.conf

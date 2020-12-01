@@ -7,7 +7,6 @@ object Strings {
   val columnTitle = "title"
   val columnIntro = "intro"
   val columnText = "text"
-  val columnCompleteText = "completeText"
   val columnDocument = "document"
   val columnSentence = "sentence"
   val columnToken = "token"
@@ -57,5 +56,6 @@ object Strings {
   val targetDbConfigCollection = "app.target_collection"
 
   val configPosModel = "app.pos_tagger_model"
+  val configPosPipelineModel = "app.pipeline_model"
 
 }

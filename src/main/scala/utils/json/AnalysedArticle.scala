@@ -11,6 +11,8 @@ case class AnalysedArticle(id: String,
                                                                 JsNumber(anno._2),
                                                                 JsString(anno._3))).toVector
 
+  override def toString: String = "("+id+", "+longUrl+", "+crawlTime.toString()+", "+text+", "+annosPos.toList+")"
+
 }
 
 object AnalysedArticleJsonProtocol extends DefaultJsonProtocol{

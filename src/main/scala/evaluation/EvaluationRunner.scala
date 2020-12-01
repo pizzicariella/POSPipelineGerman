@@ -14,6 +14,7 @@ object EvaluationRunner {
 
   val articlesToEvaluate = ConfigFactory.load().getString(Strings.configEvalFile)
   val testPosTags = ConfigFactory.load().getString(Strings.configEvalPosTags)
+  val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
   def main(args: Array[String]): Unit = {
     val sc: SparkSession = SparkSession
@@ -28,8 +29,10 @@ object EvaluationRunner {
 
     val articles = dao.getNewsArticles(None, articlesToEvaluate).map(article => Utils.switchArticleFormat(article))
 
-    val posPipeline = new PosPipeline(sc)
-    val annotations = posPipeline.runPipeline(articles, Some(" "), Some(" "))
+    val posPipeline = new PosPipeline(sc, posModel)
+    val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
+      Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
+    val annotations = posPipeline.runPipeline(articles, replacements)
     val tokenAndPos = annotations
       .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))

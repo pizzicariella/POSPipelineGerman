@@ -1,5 +1,7 @@
 package pipeline
 
+import com.typesafe.config.ConfigFactory
+import model.Strings
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
@@ -16,14 +18,15 @@ class PosPipelineTest extends AnyFunSuite{
 
   import sc.implicits._
 
+  val posModel = ConfigFactory.load().getString(Strings.configPosModel)
   val text = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war."
   val data = Seq(text).toDF("text")
-  val posPipeline = new PosPipeline(sc)
+  val posPipeline = new PosPipeline(sc, posModel)
   val pattern = "[ ,\\.]"
   val replacement = " "
   val textReplaced = "Im Jahr 1997 starben in einem Kino 59 Menschen  die meisten Besucher erstickten  nachdem ein Transformator explodiert war "
 
-  test("replaceSplitChars should replace according to pattern"){
+  /*test("replaceSplitChars should replace according to pattern"){
     val replacedDf = posPipeline.replaceSplitChars(data, Some(pattern), Some(replacement))
     val replacedTextByMethod = replacedDf
       .select("text")
@@ -41,5 +44,5 @@ class PosPipelineTest extends AnyFunSuite{
       .collect()
       .head
     assert(unreplacedText === text)
-  }
+  }*/
 }
