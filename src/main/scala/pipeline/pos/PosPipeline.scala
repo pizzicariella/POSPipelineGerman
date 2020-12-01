@@ -77,7 +77,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
 
   private def replace(articlesDf: DataFrame,
               replacements: Map[String, String]): DataFrame = {
-
+    //TODO klappt das so?
     var articlesVar = articlesDf
     for((pattern, replacement) <- replacements){
       articlesVar = articlesVar.withColumn(Strings.columnCompleteText,

@@ -23,6 +23,10 @@ object Utils {
         throw new NoSuchElementException("The column " + columnName + " does not exist.")).toString), text)
   }
 
+  def prepareArticles(articles: Seq[NewsArticle]): Seq[(String, String, String, String)] = {
+    articles.map(article => Utils.switchArticleFormat(article))
+  }
+
   def switchArticleFormat(article: NewsArticle): (String, String, String, String) = {
     (article.id, article.longUrl, article.crawlTime, article.title+" "+article.intro+" "+article.text)
   }
