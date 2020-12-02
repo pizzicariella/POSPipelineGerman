@@ -28,6 +28,10 @@ object JsonParser {
       case Some(date: JsObject) => date match {
         case JsObject(fields) if fields contains(Strings.fieldDate) => fields(Strings.fieldDate) match {
           case JsNumber(value) => value.toString()
+          case JsObject(innerFields) if innerFields contains(Strings.fieldNumberLong) =>
+              innerFields(Strings.fieldNumberLong) match {
+            case JsString(innerValue) => innerValue
+          }
         }
       }
       case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnCrawlTime))

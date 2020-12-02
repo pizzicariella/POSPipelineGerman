@@ -16,6 +16,7 @@ object Strings {
 
   val fieldDate = "$date"
   val fieldId = "$oid"
+  val fieldNumberLong = "$numberLong"
 
   val mongoString = (serverAddress: String,
                      userName: String,
@@ -41,6 +42,8 @@ object Strings {
 
   val configEvalFile = "app.file_eval"
   val configEvalPosTags = "app.pos_tags_eval"
+
+  val configTestFile = "app.inmemoryfile_test"
 
   val dbConfigUser = "app.user"
   val dbConfigPw = "app.pw"

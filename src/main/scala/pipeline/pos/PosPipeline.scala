@@ -71,7 +71,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     pipeline.fit(dataEdited).transform(dataEdited)
   }
 
-  private def replace(articlesDf: DataFrame,
+  def replace(articlesDf: DataFrame,
               replacements: Map[String, String]): DataFrame = {
     var articlesVar = articlesDf
     for((pattern, replacement) <- replacements){

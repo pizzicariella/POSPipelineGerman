@@ -1,13 +1,14 @@
 package daos
 
 import com.typesafe.config.ConfigFactory
-import daos.memory.InMemoryDao
 import org.scalatest.funsuite.AnyFunSuite
+
+import daos.memory.InMemoryDao
+import model.Strings
 
 class DAOTest extends AnyFunSuite{
 
-  val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
-  val columns = Array("title", "intro", "text")
+  val articleFile = ConfigFactory.load().getString(Strings.configTestFile)
 
   test("getArticles returns Seq with correct size"){
     val dao = new InMemoryDao()
