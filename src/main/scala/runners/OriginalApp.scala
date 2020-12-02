@@ -2,11 +2,10 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.Strings
+import model.{AnalysedArticle, Strings}
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
-import utils.Utils
-import utils.json.AnalysedArticle
+import utils.Conversion
 
 object OriginalApp {
   def main(args: Array[String]): Unit = {
@@ -36,10 +35,10 @@ object OriginalApp {
       .getOrCreate()
 
     val dao = new DbDao(userName, pw, serverAddress, port, db)
-    val articles = dao.getNewsArticles(Some(20), collectionName)
+    val articles = dao.getNewsArticles(Some(200), collectionName)
     dao.close()
 
-    val articlesWithText = Utils.prepareArticles(articles)
+    val articlesWithText = Conversion.prepareArticles(articles)
 
     val posPipeline = new PosPipeline(sc, posModel)
     val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,

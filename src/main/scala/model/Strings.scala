@@ -12,6 +12,7 @@ object Strings {
   val columnToken = "token"
   val columnNormalized = "normalized"
   val columnPos = "pos"
+  val columnAnnosPos = "annosPos"
 
   val fieldDate = "$date"
   val fieldId = "$oid"
@@ -57,5 +58,17 @@ object Strings {
 
   val configPosModel = "app.pos_tagger_model"
   val configPosPipelineModel = "app.pipeline_model"
+
+  val analysedArticleString = (id: String,
+                              longUrl: String,
+                              crawlTime: BigDecimal,
+                              text: String,
+                              annosPos: Seq[(Int, Int, String)])
+      => "("+id+", "+longUrl+", "+crawlTime.toString()+", "+text+", "+annosPos.toList+")"
+
+  val noSuchColumnString = (columnName: String) => "The column " + columnName + " does not exist."
+
+  val empty = ""
+  val whitespace = " "
 
 }

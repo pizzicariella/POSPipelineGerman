@@ -2,15 +2,14 @@ package training.pos
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.{NewsArticle, Strings}
+import model.{AnalysedArticle, NewsArticle, Strings}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import training.Trainer
-import utils.Utils
-import utils.json.AnalysedArticle
+import utils.Conversion
 
-class PosTrainer(spark: SparkSession) extends Trainer{
+class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
 
   val userName = ConfigFactory.load().getString(Strings.dbConfigUser)
   val pw = ConfigFactory.load().getString(Strings.dbConfigPw)
@@ -20,9 +19,9 @@ class PosTrainer(spark: SparkSession) extends Trainer{
   val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
 
   val dao = new DbDao(userName, pw, serverAddress, port, db)
-  val articles = dao.getNewsArticles(Some(20), collectionName)
+  val articles = dao.getNewsArticles(numArticles, collectionName)
   dao.close()
-  val articlesWithText = Utils.prepareArticles(articles)
+  val articlesWithText = Conversion.prepareArticles(articles)
 
   val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
@@ -46,7 +45,7 @@ class PosTrainer(spark: SparkSession) extends Trainer{
 
     val annotatedDf = articles match {
       case None => posPipeline.annotate(articlesWithText, replacements, path)
-      case Some(articles) => posPipeline.annotate(Utils.prepareArticles(articles), replacements, path)
+      case Some(articles) => posPipeline.annotate(Conversion.prepareArticles(articles), replacements, path)
     }
 
     val metaTextPosDf = annotatedDf.select(Strings.columnId,

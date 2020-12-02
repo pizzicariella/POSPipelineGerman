@@ -3,9 +3,8 @@ package daos.db
 import daos.DAO
 import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import daos.db.DbUtils._
-import model.{NewsArticle, Strings}
-import utils.json.AnalysedArticle
-import utils.json.{JsonParser, JsonComposer}
+import model.{AnalysedArticle, NewsArticle, Strings}
+import utils.json.{JsonComposer, JsonParser}
 
 class DbDao(val userName: String,
             val pw: String,

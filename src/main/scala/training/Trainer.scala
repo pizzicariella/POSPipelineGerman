@@ -1,8 +1,7 @@
 package training
 
-import model.NewsArticle
+import model.{AnalysedArticle, NewsArticle}
 import org.apache.spark.ml.PipelineModel
-import utils.json.AnalysedArticle
 
 trait Trainer {
 

@@ -5,7 +5,7 @@ import daos.memory.InMemoryDao
 import utils.json.JsonParser.parsePosTags
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
-import utils.Utils
+import utils.Conversion
 import model.Strings
 
 import scala.io.Source
@@ -27,7 +27,7 @@ object EvaluationRunner {
 
     val dao = new InMemoryDao()
 
-    val articles = dao.getNewsArticles(None, articlesToEvaluate).map(article => Utils.switchArticleFormat(article))
+    val articles = dao.getNewsArticles(None, articlesToEvaluate).map(article => Conversion.switchArticleFormat(article))
 
     val posPipeline = new PosPipeline(sc, posModel)
     val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,

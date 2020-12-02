@@ -1,7 +1,6 @@
 package daos
 
-import model.NewsArticle
-import utils.json.AnalysedArticle
+import model.{AnalysedArticle, NewsArticle}
 
 trait DAO {
   /**

@@ -1,5 +1,6 @@
 package utils.json
 
+import model.{AnalysedArticle, AnalysedArticleJsonProtocol}
 import spray.json._
 
 object JsonComposer {

@@ -1,9 +1,8 @@
 package daos.memory
 
 import daos.DAO
-import model.NewsArticle
+import model.{AnalysedArticle, NewsArticle}
 import utils.FileReader
-import utils.json.AnalysedArticle
 import utils.json.JsonParser.parseNewsArticle
 
 class InMemoryDao() extends DAO{
