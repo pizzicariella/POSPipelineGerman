@@ -55,7 +55,7 @@ object OriginalApp {
       .rdd
       .map(row => AnalysedArticle(row.getString(0),
         row.getString(1),
-        BigDecimal(row.getString(2)),
+        row.getString(2),
         row.getString(3),
         row.getSeq[Row](4)
           .map(innerRow => PosAnnotation(innerRow.getInt(1),

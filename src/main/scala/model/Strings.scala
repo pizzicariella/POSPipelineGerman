@@ -64,10 +64,10 @@ object Strings {
 
   val analysedArticleString = (id: String,
                               longUrl: String,
-                              crawlTime: BigDecimal,
+                              crawlTime: String,
                               text: String,
                               annosPos: List[PosAnnotation])
-      => "("+id+", "+longUrl+", "+crawlTime.toString()+", "+text+", "+annosPos+")"
+      => "("+id+", "+longUrl+", "+crawlTime+", "+text+", "+annosPos+")"
 
   val noSuchColumnString = (columnName: String) => "The column " + columnName + " does not exist."
 
