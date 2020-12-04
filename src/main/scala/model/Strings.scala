@@ -66,8 +66,8 @@ object Strings {
                               longUrl: String,
                               crawlTime: BigDecimal,
                               text: String,
-                              annosPos: Seq[(Int, Int, String)])
-      => "("+id+", "+longUrl+", "+crawlTime.toString()+", "+text+", "+annosPos.toList+")"
+                              annosPos: List[PosAnnotation])
+      => "("+id+", "+longUrl+", "+crawlTime.toString()+", "+text+", "+annosPos+")"
 
   val noSuchColumnString = (columnName: String) => "The column " + columnName + " does not exist."
 

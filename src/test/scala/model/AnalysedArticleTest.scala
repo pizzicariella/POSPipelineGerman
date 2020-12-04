@@ -1,7 +1,7 @@
 package model
 
 import org.scalatest.funsuite.AnyFunSuite
-import spray.json.JsArray
+import spray.json.{JsArray, JsObject}
 
 class AnalysedArticleTest extends AnyFunSuite{
 
@@ -9,20 +9,20 @@ class AnalysedArticleTest extends AnyFunSuite{
     "www.test.de",
     BigDecimal("1574281189000"),
     "Das Landeskriminalamt (LKA) und die Münchner Polizei fanden in der mit Chemikalien vollgepackten Dreizimmerwohnung in Sichtweite des Gondrellplatzes nämlich bisher mehr als 50 Kilogramm pyrotechnische Gegenstände und eine Vielzahl laut LKA vermutlich illegaler Feuerwerkskörper.",
-    Seq((0,2,"DET"),(4,20,"NOUN")))
+    List(PosAnnotation(0,2,"DET"),PosAnnotation(4,20,"NOUN")))
 
   test("toString returns correct String"){
     val testArticleString = "(test_1, " +
       "www.test.de, 1574281189000, " +
       "Das Landeskriminalamt (LKA) und die Münchner Polizei fanden in der mit Chemikalien vollgepackten Dreizimmerwohnung in Sichtweite des Gondrellplatzes nämlich bisher mehr als 50 Kilogramm pyrotechnische Gegenstände und eine Vielzahl laut LKA vermutlich illegaler Feuerwerkskörper., " +
-      "List((0,2,DET), (4,20,NOUN)))"
+      "List([begin: 0, end: 2, tag: DET], [begin: 4, end: 20, tag: NOUN]))"
 
     assert(testArticleString === testArticle.toString)
   }
 
-  test("annosPosAsJsArray converts annosPos correctly"){
-    val vec = testArticle.annosPosAsJsArray
-    assert(vec.isInstanceOf[Vector[JsArray]])
+  test("annosPosAsJsObject converts annotationsPos correctly"){
+    val vec = testArticle.annotationsPosAsJsObject
+    assert(vec.isInstanceOf[Vector[JsObject]])
     assert(vec.size === 2)
   }
 

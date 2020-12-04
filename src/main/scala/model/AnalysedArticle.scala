@@ -6,12 +6,17 @@ case class AnalysedArticle(id: String,
                            longUrl: String,
                            crawlTime: BigDecimal,
                            text: String,
-                           annosPos: Seq[(Int, Int, String)]) {
-  def annosPosAsJsArray: Vector[JsArray] = annosPos.map(anno => JsArray(JsNumber(anno._1),
+                           annotationsPos: List[PosAnnotation]) {
+  /*def annosPosAsJsArray: Vector[JsArray] = annosPos.map(anno => JsArray(JsNumber(anno._1),
                                                                 JsNumber(anno._2),
-                                                                JsString(anno._3))).toVector
+                                                                JsString(anno._3))).toVector*/
 
-  override def toString: String = Strings.analysedArticleString(id, longUrl, crawlTime, text, annosPos)
+  def annotationsPosAsJsObject: Vector[JsObject] = annotationsPos
+    .map(anno => PosAnnotationJsonProtocol.PosAnnotationJsonFormat.write(anno))
+    .toVector
+
+
+  override def toString: String = Strings.analysedArticleString(id, longUrl, crawlTime, text, annotationsPos)
 
 }
 
@@ -23,10 +28,10 @@ object AnalysedArticleJsonProtocol extends DefaultJsonProtocol{
 
     override def write(analysedArticle: AnalysedArticle): JsObject = JsObject(
         Strings.columnId -> JsObject(Map(Strings.fieldId -> JsString(analysedArticle.id))),
-        Strings.columnLongUrl -> JsString(analysedArticle.longUrl),
-        Strings.columnCrawlTime -> JsObject(Map(Strings.fieldDate -> JsNumber(analysedArticle.crawlTime))),
+        "longUrl" -> JsString(analysedArticle.longUrl),
+        "crawlTime" -> JsObject(Map(Strings.fieldDate -> JsNumber(analysedArticle.crawlTime))),
         Strings.columnText -> JsString(analysedArticle.text),
-        Strings.columnAnnosPos -> JsArray(analysedArticle.annosPosAsJsArray)
+        "annotationsPos" -> JsArray(analysedArticle.annotationsPosAsJsObject)
       )
   }
 }

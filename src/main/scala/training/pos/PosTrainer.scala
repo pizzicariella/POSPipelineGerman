@@ -2,7 +2,7 @@ package training.pos
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.{AnalysedArticle, NewsArticle, Strings}
+import model.{AnalysedArticle, NewsArticle, PosAnnotation, Strings}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
@@ -61,10 +61,10 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
         BigDecimal(row.getString(2)),
         row.getString(3),
         row.getSeq[Row](4)
-          .map(innerRow => (innerRow.getInt(1),
+          .map(innerRow => PosAnnotation(innerRow.getInt(1),
             innerRow.getInt(2),
             innerRow.getString(3))
-          )
+          ).toList
       )
       )
       .collect()

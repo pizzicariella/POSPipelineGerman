@@ -2,7 +2,7 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.{AnalysedArticle, Strings}
+import model.{AnalysedArticle, PosAnnotation, Strings}
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -58,10 +58,10 @@ object OriginalApp {
         BigDecimal(row.getString(2)),
         row.getString(3),
         row.getSeq[Row](4)
-          .map(innerRow => (innerRow.getInt(1),
+          .map(innerRow => PosAnnotation(innerRow.getInt(1),
             innerRow.getInt(2),
             innerRow.getString(3))
-          )
+          ).toList
       )
       )
       .collect()
