@@ -1,15 +1,12 @@
 package utils.json
 
+import model.{AnalysedArticle, AnalysedArticleJsonProtocol}
 import spray.json._
 
 object JsonComposer {
 
-  def composeAnalysedArticleJson(id: String,
-                                 longUrl: String,
-                                 crawlTime: BigDecimal,
-                                 text: String,
-                                 annosPos: Seq[(Int, Int, String)]): String =
-    AnalysedArticle(id, longUrl, crawlTime, text, annosPos)
+  def composeAnalysedArticleJson(article: AnalysedArticle): String =
+    article
       .toJson(AnalysedArticleJsonProtocol.AnalysedArticleJsonFormat)
       .compactPrint
 

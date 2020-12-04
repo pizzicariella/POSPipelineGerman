@@ -1,5 +1,7 @@
 package pipeline
 
+import com.typesafe.config.ConfigFactory
+import model.Strings
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
@@ -16,15 +18,16 @@ class PosPipelineTest extends AnyFunSuite{
 
   import sc.implicits._
 
-  val text = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war."
+  val posModel = ConfigFactory.load().getString(Strings.configPosModel)
+  val text = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war.Testsentece."
   val data = Seq(text).toDF("text")
-  val posPipeline = new PosPipeline(sc)
-  val pattern = "[ ,\\.]"
-  val replacement = " "
-  val textReplaced = "Im Jahr 1997 starben in einem Kino 59 Menschen  die meisten Besucher erstickten  nachdem ein Transformator explodiert war "
+  val posPipeline = new PosPipeline(sc, posModel)
+  val replacements = Map(" " -> " ",
+    "(?<=[^A-Z\\d])\\b\\.\\b" -> ". ")
+  val textReplaced = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war. Testsentece."
 
-  test("replaceSplitChars should replace according to pattern"){
-    val replacedDf = posPipeline.replaceSplitChars(data, Some(pattern), Some(replacement))
+  test("replace should replace according to pattern"){
+    val replacedDf = posPipeline.replace(data, replacements)
     val replacedTextByMethod = replacedDf
       .select("text")
       .map(row => row.getString(0))
@@ -33,8 +36,8 @@ class PosPipelineTest extends AnyFunSuite{
     assert(replacedTextByMethod === textReplaced)
   }
 
-  test("replaceSplitChars should not replace split chars if None is given"){
-    val unreplacedDf = posPipeline.replaceSplitChars(data, None, None)
+  test("replaceSplitChars should not replace anything if replacement map is empty"){
+    val unreplacedDf = posPipeline.replace(data, Map.empty)
     val unreplacedText = unreplacedDf
       .select("text")
       .map(row => row.getString(0))

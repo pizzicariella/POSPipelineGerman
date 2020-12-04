@@ -1,42 +1,56 @@
 package utils.json
 
-
+import model.{NewsArticle, Strings}
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
 object JsonParser {
 
-  //TODO: convert non string columns into strings?
-  def parseRelevantAttributes(json: String, columns: Array[String]): Map[String, Any] = {
+  def parseNewsArticle(json: String): NewsArticle = {
+
     val jsonAst = json.parseJson
     val data = jsonAst.convertTo[Map[String, JsValue]]
 
-    //TODO need special char to divide title intro text?
-    columns.map(columnName => (columnName,
-      data
-        .getOrElse(columnName, throw new NoSuchElementException("The column " + columnName + " does not exist.")) match {
-        case JsObject(fields) if fields.contains("$date") => fields("$date") match {
-          case JsNumber(value) => value.toString()
-        }
-        case JsObject(fields) if fields.contains("$oid") => fields("$oid") match {
+    //TODO add case _ clauses
+    NewsArticle(data.get(Strings.columnId) match {
+      case Some(id: JsObject) => id match {
+        case JsObject(fields) if fields.contains(Strings.fieldId) => fields(Strings.fieldId) match {
           case JsString(value) => value
         }
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnId))
+    }, data.get(Strings.columnLongUrl) match {
+      case Some(url: JsString) => url match {
         case JsString(value) => value
-      })).toMap
-
-    /*data.filter(entry => columns.contains(entry._1))
-        .map(entry => (entry._1, entry._2 match {
-            case JsString(value) => value
-            case _ => ""
-        }))*/
-
-    //previously parse doc text method
-    /*columns.map(columnName =>
-      data.getOrElse(columnName, throw new NoSuchElementException("The column "+columnName+" does not exist.")) match {
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnLongUrl))
+    }, data.get(Strings.columnCrawlTime) match {
+      case Some(date: JsObject) => date match {
+        case JsObject(fields) if fields contains(Strings.fieldDate) => fields(Strings.fieldDate) match {
+          case JsNumber(value) => value.toString()
+          case JsObject(innerFields) if innerFields contains(Strings.fieldNumberLong) =>
+              innerFields(Strings.fieldNumberLong) match {
+            case JsString(innerValue) => innerValue
+          }
+        }
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnCrawlTime))
+    }, data.get(Strings.columnTitle) match {
+      case Some(title: JsString) => title match {
         case JsString(value) => value
-        case _ => ""
-      })
-      .reduce((s1, s2) => s1+" "+s2)*/
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnTitle))
+    }, data.get(Strings.columnIntro) match {
+      case Some(intro: JsString) => intro match {
+        case JsString(value) => value
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnIntro))
+    }, data.get(Strings.columnText) match {
+      case Some(text: JsString) => text match {
+        case JsString(value) => value
+      }
+      case None => throw new NoSuchElementException(Strings.noSuchColumnString(Strings.columnText))
+    })
   }
 
   def parsePosTags(json: String): List[String] = {
