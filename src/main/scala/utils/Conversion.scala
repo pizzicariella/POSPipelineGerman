@@ -12,6 +12,6 @@ object Conversion {
     (article.id,
       article.longUrl,
       article.crawlTime,
-      article.title+Strings.whitespace+article.intro+Strings.whitespace+article.text)
+      article.title+Strings.whitespace+"$§$"+Strings.whitespace+article.intro+Strings.whitespace+"$§$ "+article.text)
   }
 }
