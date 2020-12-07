@@ -16,4 +16,11 @@ trait DAO {
    * @param article
    */
   def writeArticle(article: AnalysedArticle, destination: String)
+
+  /**
+   * Writes multiple analysed articles to destination
+   * @param articles
+   * @param destination
+   */
+  def writeArticles(articles: Seq[AnalysedArticle], destination: String)
 }

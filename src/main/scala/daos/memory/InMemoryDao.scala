@@ -2,14 +2,15 @@ package daos.memory
 
 import daos.DAO
 import model.{AnalysedArticle, NewsArticle}
-import utils.FileReader
+import utils.FileIO
+import utils.json.JsonComposer
 import utils.json.JsonParser.parseNewsArticle
 
 class InMemoryDao() extends DAO{
 
   override def getNewsArticles(limit: Option[Int], file: String): Seq[NewsArticle] = {
 
-    val articles = FileReader.readJsonFile(file)
+    val articles = FileIO.readJsonFile(file)
 
     val until = limit match {
       case Some(x) => x
@@ -21,4 +22,16 @@ class InMemoryDao() extends DAO{
   }
 
   override def writeArticle(article: AnalysedArticle, destination: String): Unit = ???
+
+  /**
+   * Writes multiple analysed articles to destination
+   *
+   * @param articles
+   * @param destination
+   */
+    //TODO test
+  override def writeArticles(articles: Seq[AnalysedArticle], destination: String): Unit = {
+    val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
+    FileIO.writeJsonFile(destination, jsonList)
+  }
 }

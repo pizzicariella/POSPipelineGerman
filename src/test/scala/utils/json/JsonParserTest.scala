@@ -1,12 +1,12 @@
 package utils.json
 
 import org.scalatest.funsuite.AnyFunSuite
-import utils.FileReader
+import utils.FileIO
 
 class JsonParserTest extends AnyFunSuite{
 
   val pathToTestFile = "src/test/resources/testArticle.json"
-  val json = FileReader.readJsonFile(pathToTestFile).head
+  val json = FileIO.readJsonFile(pathToTestFile).head
   val id = "5ded44bbd15247dbbad979b1"
   val crawlTime = "1575834315527"
   val title = "Delhi - Kurzschluss wohl Ursache für Brand mit 43 Toten"

@@ -49,4 +49,12 @@ class DbDao(val userName: String,
   def close() = {
     mongoClient.close()
   }
+
+  /**
+   * Writes multiple analysed articles to destination
+   *
+   * @param articles
+   * @param destination
+   */
+  override def writeArticles(articles: Seq[AnalysedArticle], destination: String): Unit = ???
 }

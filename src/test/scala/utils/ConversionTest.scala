@@ -20,7 +20,7 @@ class ConversionTest extends AnyFunSuite{
     "1574281189000",
     "Das Landeskriminalamt (LKA) und die Münchner Polizei fanden in der mit Chemikalien vollgepackten Dreizimmerwohnung in Sichtweite des Gondrellplatzes nämlich bisher mehr als 50 Kilogramm pyrotechnische Gegenstände und eine Vielzahl laut LKA vermutlich illegaler Feuerwerkskörper.")
 
-  val newsArticles = FileReader.readJsonFile(ConfigFactory.load().getString(Strings.configTestFile))
+  val newsArticles = FileIO.readJsonFile(ConfigFactory.load().getString(Strings.configTestFile))
     .map(json => JsonParser.parseNewsArticle(json))
 
   test("switchArticleFormat should convert NewsArticle correctly"){
