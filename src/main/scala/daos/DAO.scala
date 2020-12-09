@@ -1,6 +1,6 @@
 package daos
 
-import model.{AnalysedArticle, NewsArticle}
+import model.{AnnotatedArticle, NewsArticle}
 
 trait DAO {
   /**
@@ -15,12 +15,12 @@ trait DAO {
    * Writes single analysed article to destination.
    * @param article
    */
-  def writeArticle(article: AnalysedArticle, destination: String)
+  def writeArticle(article: AnnotatedArticle, destination: String)
 
   /**
    * Writes multiple analysed articles to destination
    * @param articles
    * @param destination
    */
-  def writeArticles(articles: Seq[AnalysedArticle], destination: String)
+  def writeArticles(articles: Seq[AnnotatedArticle], destination: String)
 }

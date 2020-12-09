@@ -4,7 +4,7 @@ import java.io.File
 
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import model.{AnalysedArticle, Strings}
+import model.{AnnotatedArticle, Strings}
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.SparkSession
@@ -43,7 +43,7 @@ class PosTrainerTest extends AnyFunSuite{
   test("results with None annotates based on previously saved model"){
     posTrainer.startTraining(Some(path))
     val result = posTrainer.results(None, path, false)
-    assert(result.isInstanceOf[Seq[AnalysedArticle]])
+    assert(result.isInstanceOf[Seq[AnnotatedArticle]])
     val directory = new Directory(new File(path))
     directory.deleteRecursively()
   }

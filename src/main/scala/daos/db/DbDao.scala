@@ -3,7 +3,7 @@ package daos.db
 import daos.DAO
 import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import daos.db.DbUtils._
-import model.{AnalysedArticle, NewsArticle, Strings}
+import model.{AnnotatedArticle, NewsArticle, Strings}
 import utils.json.{JsonComposer, JsonParser}
 
 class DbDao(val userName: String,
@@ -39,7 +39,7 @@ class DbDao(val userName: String,
     results.map(doc => JsonParser.parseNewsArticle(doc.toJson()))
   }
 
-  override def writeArticle(article: AnalysedArticle, collectionName: String): Unit = {
+  override def writeArticle(article: AnnotatedArticle, collectionName: String): Unit = {
     val json = JsonComposer.composeAnalysedArticleJson(article)
     val articleDoc = Document(json)
     val collection = getCollectionFromDb(db, collectionName, mongoClient)
@@ -56,5 +56,5 @@ class DbDao(val userName: String,
    * @param articles
    * @param destination
    */
-  override def writeArticles(articles: Seq[AnalysedArticle], destination: String): Unit = ???
+  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = ???
 }

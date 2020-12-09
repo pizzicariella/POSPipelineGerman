@@ -2,7 +2,8 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.{AnalysedArticle, PosAnnotation, Strings}
+import meta.ExtraInformation
+import model.{AnnotatedArticle, PosAnnotation, Strings}
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -53,16 +54,21 @@ object OriginalApp {
 
     val analysedArticles = metaTextPosDf
       .rdd
-      .map(row => AnalysedArticle(row.getString(0),
-        row.getString(1),
-        row.getString(2),
-        row.getString(3),
-        row.getSeq[Row](4)
+      .map(row => {
+        val posList = row.getSeq[Row](4)
           .map(innerRow => PosAnnotation(innerRow.getInt(1),
             innerRow.getInt(2),
             innerRow.getString(3))
           ).toList
-      )
+
+        AnnotatedArticle(row.getString(0),
+          row.getString(1),
+          row.getString(2),
+          row.getString(3),
+          posList,
+          ExtraInformation.getPosPercentage(posList)
+        )
+      }
       )
       .collect()
 

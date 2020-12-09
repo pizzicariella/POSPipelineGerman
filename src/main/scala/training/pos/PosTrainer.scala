@@ -2,7 +2,8 @@ package training.pos
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import model.{AnalysedArticle, NewsArticle, PosAnnotation, Strings}
+import meta.ExtraInformation
+import model.{AnnotatedArticle, NewsArticle, PosAnnotation, Strings}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
@@ -41,7 +42,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       }
     }
 
-  override def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnalysedArticle] = {
+  override def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnnotatedArticle] = {
 
     val annotatedDf = articles match {
       case None => posPipeline.annotate(articlesWithText, replacements, path)
@@ -56,16 +57,21 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
 
     val analysedArticles = metaTextPosDf
       .rdd
-      .map(row => AnalysedArticle(row.getString(0),
-        row.getString(1),
-        row.getString(2),
-        row.getString(3),
-        row.getSeq[Row](4)
+      .map(row => {
+        val posList = row.getSeq[Row](4)
           .map(innerRow => PosAnnotation(innerRow.getInt(1),
             innerRow.getInt(2),
             innerRow.getString(3))
           ).toList
-      )
+
+        AnnotatedArticle(row.getString(0),
+          row.getString(1),
+          row.getString(2),
+          row.getString(3),
+          posList,
+          ExtraInformation.getPosPercentage(posList)
+        )
+      }
       )
       .collect()
 

@@ -1,13 +1,13 @@
 package utils.json
 
-import model.{AnalysedArticle, AnalysedArticleJsonProtocol}
+import model.{AnalysedArticleJsonProtocol, AnnotatedArticle}
 import spray.json._
 
 object JsonComposer {
 
-  def composeAnalysedArticleJson(article: AnalysedArticle): String =
+  def composeAnalysedArticleJson(article: AnnotatedArticle): String =
     article
-      .toJson(AnalysedArticleJsonProtocol.AnalysedArticleJsonFormat)
+      .toJson(AnalysedArticleJsonProtocol.AnnotatedArticleJsonFormat)
       .compactPrint
 
 }

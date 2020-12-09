@@ -1,6 +1,6 @@
 package training
 
-import model.{AnalysedArticle, NewsArticle}
+import model.{AnnotatedArticle, NewsArticle}
 import org.apache.spark.ml.PipelineModel
 
 trait Trainer {
@@ -19,6 +19,6 @@ trait Trainer {
    * @param save pass true if results should be saved to db
    * @return
    */
-  def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnalysedArticle]
+  def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnnotatedArticle]
 
 }

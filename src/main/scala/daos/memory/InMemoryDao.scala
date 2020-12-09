@@ -1,7 +1,7 @@
 package daos.memory
 
 import daos.DAO
-import model.{AnalysedArticle, NewsArticle}
+import model.{AnnotatedArticle, NewsArticle}
 import utils.FileIO
 import utils.json.JsonComposer
 import utils.json.JsonParser.parseNewsArticle
@@ -21,7 +21,7 @@ class InMemoryDao() extends DAO{
     sliced.map(doc => parseNewsArticle(doc))
   }
 
-  override def writeArticle(article: AnalysedArticle, destination: String): Unit = ???
+  override def writeArticle(article: AnnotatedArticle, destination: String): Unit = ???
 
   /**
    * Writes multiple analysed articles to destination
@@ -30,7 +30,7 @@ class InMemoryDao() extends DAO{
    * @param destination
    */
     //TODO test
-  override def writeArticles(articles: Seq[AnalysedArticle], destination: String): Unit = {
+  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = {
     val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
     FileIO.writeJsonFile(destination, jsonList)
   }
