@@ -2,24 +2,43 @@ package daos.memory
 
 import daos.DAO
 import model.{AnnotatedArticle, NewsArticle}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import utils.FileIO
 import utils.json.JsonComposer
 import utils.json.JsonParser.parseNewsArticle
 
-class InMemoryDao() extends DAO{
+class InMemoryDao(val spark: SparkSession) extends DAO{
 
-  override def getNewsArticles(limit: Option[Int], file: String): Seq[NewsArticle] = {
+  override def getNewsArticles(limit: Option[Int], file: String): DataFrame = {//Seq[NewsArticle] = {
 
-    val articles = FileIO.readJsonFile(file)
+    import spark.implicits._
 
-    val until = limit match {
+    //val articles = FileIO.readJsonFile(file)
+    val articles = spark.read.json(file)
+      .drop("short_url",
+        "keywords",
+        "published_time",
+        "news_site",
+        "image_links",
+        "description",
+        "authors",
+        "links")
+
+    limit match {
+      case Some(x) => articles.limit(x)
+      case None => articles
+    }
+
+    /*val until = limit match {
       case Some(x) => x
       case None => articles.size
     }
 
     val sliced = articles.slice(0, until)
-    sliced.map(doc => parseNewsArticle(doc))
+    sliced.map(doc => parseNewsArticle(doc))*/
+
   }
+
 
   override def writeArticle(article: AnnotatedArticle, destination: String): Unit = ???
 
@@ -35,3 +54,4 @@ class InMemoryDao() extends DAO{
     FileIO.writeJsonFile(destination, jsonList)
   }
 }
+

@@ -35,7 +35,7 @@ object OriginalApp {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val dao = new DbDao(userName, pw, serverAddress, port, db)
+    val dao = new DbDao(userName, pw, serverAddress, port, db, sc)
     val articles = dao.getNewsArticles(Some(200), collectionName)
     dao.close()
 
