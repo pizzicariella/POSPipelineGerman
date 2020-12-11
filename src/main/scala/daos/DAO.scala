@@ -23,5 +23,5 @@ trait DAO {
    * @param articles
    * @param destination
    */
-  def writeArticles(articles: Seq[AnnotatedArticle], destination: String)
+  def writeArticles(articles: DataFrame, destination: String)
 }

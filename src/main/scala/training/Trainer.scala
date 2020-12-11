@@ -2,6 +2,7 @@ package training
 
 import model.{AnnotatedArticle, NewsArticle}
 import org.apache.spark.ml.PipelineModel
+import org.apache.spark.sql.DataFrame
 
 trait Trainer {
 
@@ -19,6 +20,6 @@ trait Trainer {
    * @param save pass true if results should be saved to db
    * @return
    */
-  def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnnotatedArticle]
+  def results(articles: Option[DataFrame], path: String, save: Boolean): Seq[AnnotatedArticle]
 
 }

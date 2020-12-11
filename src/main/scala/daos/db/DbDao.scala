@@ -70,5 +70,5 @@ class DbDao(val userName: String,
    * @param articles
    * @param destination
    */
-  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = ???
+  override def writeArticles(articles: DataFrame, destination: String): Unit = ???
 }

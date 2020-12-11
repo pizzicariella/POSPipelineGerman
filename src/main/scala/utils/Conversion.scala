@@ -2,8 +2,7 @@ package utils
 
 import model.{NewsArticle, Strings}
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.catalyst.dsl.expressions.{DslExpression, StringToAttributeConversionHelper}
-import org.apache.spark.sql.functions.{col, lit, regexp_replace, when}
+import org.apache.spark.sql.functions.{col, concat, lit, regexp_replace, when}
 
 object Conversion {
 
@@ -29,9 +28,11 @@ object Conversion {
   }
 
   def createNewTextColumn(articles: DataFrame): DataFrame = {
-    //TODO funktioniert das?
-    articles.withColumn("text", when(col("title").isNotNull && $"intro".isNotNull && $"text".isNotNull,
-      $"title"+" $§$ "+$"intro"+ " $§$ "+$"text"))
+    articles.withColumn("text", concat(col("title"),
+      lit(" $§$ "),
+      col("intro"),
+      lit(" $§$ "),
+      col("text")))
       .drop("title", "intro")
   }
 

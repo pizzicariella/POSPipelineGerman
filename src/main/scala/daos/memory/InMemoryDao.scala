@@ -49,9 +49,10 @@ class InMemoryDao(val spark: SparkSession) extends DAO{
    * @param destination
    */
     //TODO test
-  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = {
-    val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
-    FileIO.writeJsonFile(destination, jsonList)
+  override def writeArticles(articles: DataFrame, destination: String): Unit = {
+    //val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
+    //FileIO.writeJsonFile(destination, jsonList)
+      articles.write.json(destination)
   }
 }
 

@@ -4,6 +4,8 @@ import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
 import meta.ExtraInformation
 import model.{AnnotatedArticle, PosAnnotation, Strings}
+import org.apache.spark.sql.functions.{col, concat, explode, row_number, translate}
+import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{Row, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -31,9 +33,7 @@ object InMemoryApp {
 
     val posPipeline = new PosPipeline(spark, posModel)
 
-    //Hier gehts weiter
-
-    val annotations = posPipeline.runPipeline(articlesWithText, replacements)
+    val annotations = posPipeline.runPipeline(articlesWithText)
 
     val metaTextPosDf = annotations.select(Strings.columnId,
       Strings.columnLongUrl,
@@ -41,7 +41,16 @@ object InMemoryApp {
       Strings.columnText,
       Strings.columnPos)
 
-    val analysedArticles = metaTextPosDf
+    val exploded = metaTextPosDf.withColumn("pos", explode(col("pos")))
+    //val index = exploded.schema.fieldIndex("pos")
+    //val posSchema = exploded.schema(index).dataType.asInstanceOf[StructType].drop(0).drop(4).drop(5)
+    //val finalDf = exploded.withColumn("pos", posSchema)
+    //metaTextPosDf.explain(true)
+    //metaTextPosDf.select("pos").select("element").select("begin")
+    exploded.printSchema()
+    metaTextPosDf.show(1,false)
+
+    /*val annotatedArticles = metaTextPosDf
       .rdd
       .map(row => {
         val posList = row.getSeq[Row](4)
@@ -58,9 +67,8 @@ object InMemoryApp {
           ExtraInformation.getPosPercentage(posList)
         )
       }
-      )
-      .collect()
+      )*/
 
-    dao.writeArticles(analysedArticles, targetFile)
+    //dao.writeArticles(annotatedArticles, targetFile)
   }
 }

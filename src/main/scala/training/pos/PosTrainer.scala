@@ -5,7 +5,7 @@ import daos.db.DbDao
 import meta.ExtraInformation
 import model.{AnnotatedArticle, NewsArticle, PosAnnotation, Strings}
 import org.apache.spark.ml.PipelineModel
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import pipeline.pos.PosPipeline
 import training.Trainer
 import utils.Conversion
@@ -19,20 +19,21 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
   val db = ConfigFactory.load().getString(Strings.dbConfigDb)
   val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
 
-  val dao = new DbDao(userName, pw, serverAddress, port, db)
+  val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
   val articles = dao.getNewsArticles(numArticles, collectionName)
   dao.close()
-  val articlesWithText = Conversion.prepareArticles(articles)
+  val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+    (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+  val articlesWithText = Conversion.prepareArticles(articles, replacements)
 
   val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
   val posPipeline = new PosPipeline(spark, posModel)
-  val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-    Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
+
 
   override def startTraining(path: Option[String]): PipelineModel = {
 
-    val model = posPipeline.train(articlesWithText, replacements)
+    val model = posPipeline.train(articlesWithText)
 
     path match {
       case None => model
@@ -42,11 +43,11 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       }
     }
 
-  override def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnnotatedArticle] = {
+  override def results(articles: Option[DataFrame], path: String, save: Boolean): Seq[AnnotatedArticle] = {
 
     val annotatedDf = articles match {
-      case None => posPipeline.annotate(articlesWithText, replacements, path)
-      case Some(articles) => posPipeline.annotate(Conversion.prepareArticles(articles), replacements, path)
+      case None => posPipeline.annotate(articlesWithText, path)
+      case Some(articles) => posPipeline.annotate(Conversion.prepareArticles(articles, replacements), path)
     }
 
     val metaTextPosDf = annotatedDf.select(Strings.columnId,
@@ -55,7 +56,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       Strings.columnText,
       Strings.columnPos)
 
-    val analysedArticles = metaTextPosDf
+    val annotatedArticles = metaTextPosDf
       .rdd
       .map(row => {
         val posList = row.getSeq[Row](4)
@@ -83,12 +84,12 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
       val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
-      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb)
-      analysedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
+      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
+      annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
       targetDao.close()
     }
 
-    analysedArticles
+    annotatedArticles
 
   }
 }

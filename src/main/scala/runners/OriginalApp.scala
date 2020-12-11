@@ -39,12 +39,14 @@ object OriginalApp {
     val articles = dao.getNewsArticles(Some(200), collectionName)
     dao.close()
 
-    val articlesWithText = Conversion.prepareArticles(articles)
+    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+
+    val articlesWithText = Conversion.prepareArticles(articles, replacements)
 
     val posPipeline = new PosPipeline(sc, posModel)
-    val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-      Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
-    val annotations = posPipeline.runPipeline(articlesWithText, replacements)
+
+    val annotations = posPipeline.runPipeline(articlesWithText)
 
     val metaTextPosDf = annotations.select(Strings.columnId,
       Strings.columnLongUrl,
@@ -52,7 +54,7 @@ object OriginalApp {
       Strings.columnText,
       Strings.columnPos)
 
-    val analysedArticles = metaTextPosDf
+    val annotatedArticles = metaTextPosDf
       .rdd
       .map(row => {
         val posList = row.getSeq[Row](4)
@@ -72,8 +74,8 @@ object OriginalApp {
       )
       .collect()
 
-    val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb)
-    analysedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
+    val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, sc)
+    annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
     targetDao.close()
   }
 }

@@ -64,14 +64,11 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
 
 
 
-   override def runPipeline(articles: Seq[(String, String, String, String)],
-                            replacements: Map[String, String]): DataFrame = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
-    pipeline.fit(dataEdited).transform(dataEdited)
+   override def runPipeline(articles: DataFrame): DataFrame = {
+    pipeline.fit(articles).transform(articles)
   }
 
-  def replace(articlesDf: DataFrame,
+  /*def replace(articlesDf: DataFrame,
               replacements: Map[String, String]): DataFrame = {
     var articlesVar = articlesDf
     for((pattern, replacement) <- replacements){
@@ -79,20 +76,19 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
         regexp_replace(articlesVar(Strings.columnText), pattern, replacement))
     }
     articlesVar
+  }*/
+
+  override def train(articles: DataFrame): PipelineModel = {
+    //val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
+    //val dataEdited = replace(data, replacements)
+    pipeline.fit(articles)
   }
 
-  override def train(articles: Seq[(String, String, String, String)], replacements: Map[String, String]): PipelineModel = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
-    pipeline.fit(dataEdited)
-  }
-
-  override def annotate(articles: Seq[(String, String, String, String)],
-                        replacements: Map[String, String],
+  override def annotate(articles: DataFrame,
                         path: String): DataFrame = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
+    //val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
+    //val dataEdited = replace(data, replacements)
     val model = PipelineModel.load(path)
-    model.transform(dataEdited)
+    model.transform(articles)
   }
 }
