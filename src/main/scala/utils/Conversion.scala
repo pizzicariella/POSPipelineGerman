@@ -1,8 +1,11 @@
 package utils
 
 import model.{NewsArticle, Strings}
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions.{col, concat, lit, regexp_replace, when}
+import org.apache.spark.sql.{Column, DataFrame}
+import org.apache.spark.sql.functions.{col, concat, lit, regexp_replace, struct, when}
+import org.apache.spark.sql.types.{StructField, StructType}
+
+import scala.util.Try
 
 object Conversion {
 
@@ -12,8 +15,11 @@ object Conversion {
 
   def prepareArticles(articles: DataFrame, replacements: Seq[(String, String)]): DataFrame = {
     val dfWithTextColumn = createNewTextColumn(articles)
-    replace(dfWithTextColumn, replacements)
+    val replaced = replace(dfWithTextColumn, replacements)
+    removeEmptyTextStrings(replaced)
   }
+
+  def removeEmptyTextStrings(df: DataFrame): DataFrame = df.filter("text != ''")
 
   def replace(articlesDf: DataFrame,
               replacements: Seq[(String, String)]): DataFrame = {
@@ -34,6 +40,27 @@ object Conversion {
       lit(" $§$ "),
       col("text")))
       .drop("title", "intro")
+  }
+
+  def dropNestedColumns(df: DataFrame, sourceColumn: String, toDrop: Array[String]): DataFrame = {
+    def getSourceField(source: String): Try[StructField] = {
+      Try(df.schema.fields.filter(_.name == source).head)
+    }
+
+    def getType(sourceField: StructField): Try[StructType] = {
+      Try(sourceField.dataType.asInstanceOf[StructType])
+    }
+
+    def genOutputCol(names: Array[String], source: String): Column = {
+      struct(names.map(x => col(source).getItem(x).alias(x)): _*)
+    }
+
+    getSourceField(sourceColumn)
+      .flatMap(getType)
+      .map(_.fieldNames.diff(toDrop))
+      .map(genOutputCol(_, sourceColumn))
+      .map(df.withColumn(sourceColumn, _))
+      .getOrElse(df)
   }
 
   def switchArticleFormat(article: NewsArticle): (String, String, String, String) = {

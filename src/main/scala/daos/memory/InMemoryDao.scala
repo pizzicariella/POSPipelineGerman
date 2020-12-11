@@ -1,5 +1,8 @@
 package daos.memory
 
+import java.io.File
+import java.nio.file.{Files, Paths}
+
 import daos.DAO
 import model.{AnnotatedArticle, NewsArticle}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -7,11 +10,12 @@ import utils.FileIO
 import utils.json.JsonComposer
 import utils.json.JsonParser.parseNewsArticle
 
+import scala.reflect.io.Directory
+
+
 class InMemoryDao(val spark: SparkSession) extends DAO{
 
   override def getNewsArticles(limit: Option[Int], file: String): DataFrame = {//Seq[NewsArticle] = {
-
-    import spark.implicits._
 
     //val articles = FileIO.readJsonFile(file)
     val articles = spark.read.json(file)
@@ -52,7 +56,10 @@ class InMemoryDao(val spark: SparkSession) extends DAO{
   override def writeArticles(articles: DataFrame, destination: String): Unit = {
     //val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
     //FileIO.writeJsonFile(destination, jsonList)
+      new Directory(new File(destination)).deleteRecursively()
+      //articles.coalesce(1).write.format("json").save(destination)
       articles.write.json(destination)
+      //articles.show(false)
   }
 }
 

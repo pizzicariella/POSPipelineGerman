@@ -7,7 +7,7 @@ case class AnnotatedArticle(id: String,
                            crawlTime: String,
                            text: String,
                            annotationsPos: List[PosAnnotation],
-                           tagPercentage: List[(String, Double)]) {
+                           tagPercentage: List[PosPercentage]) {
 
   def annotationsPosAsJsObject: Vector[JsObject] = annotationsPos
     .map(anno => PosAnnotationJsonProtocol.PosAnnotationJsonFormat.write(anno))
@@ -27,8 +27,8 @@ object AnalysedArticleJsonProtocol extends DefaultJsonProtocol{
         "longUrl" -> JsString(annotatedArticle.longUrl),
         "crawlTime" -> JsString(annotatedArticle.crawlTime),
         Strings.columnText -> JsString(annotatedArticle.text),
-        "annotationsPos" -> JsArray(annotatedArticle.annotationsPosAsJsObject),
-        "tagsPercentage" -> JsObject(annotatedArticle.tagPercentage.toMap.mapValues(percentage => JsNumber(percentage)))
+        "annotationsPos" -> JsArray(annotatedArticle.annotationsPosAsJsObject)
+        //"tagsPercentage" -> JsObject(annotatedArticle.tagPercentage.toMap.mapValues(percentage => JsNumber(percentage)))
       )
   }
 

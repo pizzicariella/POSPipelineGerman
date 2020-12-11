@@ -3,8 +3,9 @@ package training.pos
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
 import meta.ExtraInformation
-import model.{AnnotatedArticle, NewsArticle, PosAnnotation, Strings}
+import model.{AnnotatedArticle, NewsArticle, PosAnnotation, PosPercentage, Strings}
 import org.apache.spark.ml.PipelineModel
+import org.apache.spark.sql.functions.expr
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import pipeline.pos.PosPipeline
 import training.Trainer
@@ -30,6 +31,8 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
 
   val posPipeline = new PosPipeline(spark, posModel)
 
+  import spark.implicits._
+
 
   override def startTraining(path: Option[String]): PipelineModel = {
 
@@ -43,7 +46,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       }
     }
 
-  override def results(articles: Option[DataFrame], path: String, save: Boolean): Seq[AnnotatedArticle] = {
+  override def results(articles: Option[DataFrame], path: String, save: Boolean): DataFrame = {
 
     val annotatedDf = articles match {
       case None => posPipeline.annotate(articlesWithText, path)
@@ -56,25 +59,30 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       Strings.columnText,
       Strings.columnPos)
 
-    val annotatedArticles = metaTextPosDf
+    val dropedNested = metaTextPosDf.withColumn("pos",
+      expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as result))"))
+
+    val annotatedArticles = dropedNested
       .rdd
       .map(row => {
         val posList = row.getSeq[Row](4)
-          .map(innerRow => PosAnnotation(innerRow.getInt(1),
-            innerRow.getInt(2),
-            innerRow.getString(3))
+          .map(innerRow => PosAnnotation(innerRow.getInt(0),
+            innerRow.getInt(1),
+            innerRow.getString(2))
           ).toList
 
-        AnnotatedArticle(row.getString(0),
+        val percentages = ExtraInformation.getPosPercentage(posList)
+          .map(percentage => PosPercentage(percentage._1, percentage._2))
+
+        AnnotatedArticle(row.getStruct(0).getString(0),
           row.getString(1),
-          row.getString(2),
+          row.getStruct(2).getStruct(0).getString(0),
           row.getString(3),
           posList,
-          ExtraInformation.getPosPercentage(posList)
+          percentages
         )
       }
-      )
-      .collect()
+      ).toDF()
 
     if(save){
       val targetUserName = ConfigFactory.load().getString(Strings.targetDbConfigUser)
@@ -85,7 +93,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
       val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
-      annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
+      //annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
       targetDao.close()
     }
 

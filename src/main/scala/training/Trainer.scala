@@ -20,6 +20,6 @@ trait Trainer {
    * @param save pass true if results should be saved to db
    * @return
    */
-  def results(articles: Option[DataFrame], path: String, save: Boolean): Seq[AnnotatedArticle]
+  def results(articles: Option[DataFrame], path: String, save: Boolean): DataFrame
 
 }

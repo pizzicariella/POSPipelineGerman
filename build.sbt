@@ -8,7 +8,7 @@ libraryDependencies ++=Seq(
   "org.apache.spark" %% "spark-core" % "2.4.7",
   "com.johnsnowlabs.nlp" %% "spark-nlp" % "2.6.2",
   "com.johnsnowlabs.nlp" %% "spark-nlp-gpu" % "2.6.2",
-  "org.apache.spark" %% "spark-mllib" % "2.4.0",
+  "org.apache.spark" %% "spark-mllib" % "2.4.7",
   "org.apache.spark" %% "spark-sql" % "2.4.7",
 
   "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0",

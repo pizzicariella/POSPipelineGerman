@@ -48,7 +48,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     .setOutputCol(Strings.columnPos)
 
   val finisher = new Finisher()
-    .setInputCols(Strings.columnToken, Strings.columnNormalized, Strings.columnPos)
+    .setInputCols(Strings.columnPos)
     .setCleanAnnotations(false)
     .setIncludeMetadata(false)
 
