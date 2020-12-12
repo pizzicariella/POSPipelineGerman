@@ -1,5 +1,6 @@
 package model
 
+//TODO update or delete
 object Strings {
   val columnId = "_id"
   val columnLongUrl = "long_url"

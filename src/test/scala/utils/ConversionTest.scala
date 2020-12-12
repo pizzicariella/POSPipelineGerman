@@ -1,13 +1,12 @@
 package utils
 
-import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
 import model.NewsArticle
 import org.scalatest.funsuite.AnyFunSuite
 import model.Strings
 import org.apache.spark.sql.SparkSession
-import utils.json.JsonParser
 
+//TODO update
 class ConversionTest extends AnyFunSuite{
 
   val testArticle = NewsArticle("test_1",
@@ -40,10 +39,10 @@ class ConversionTest extends AnyFunSuite{
 
   //val newsArticles = dao.getNewsArticles()
 
-  test("switchArticleFormat should convert NewsArticle correctly"){
+ /* test("switchArticleFormat should convert NewsArticle correctly"){
     val converted = Conversion.switchArticleFormat(testArticle)
     assert(converted === correctlyConverted)
-  }
+  }*/
 
   /*test("prepareArticles should map Seq of NewsArticles correctly"){
     val convertedArticles = Conversion.prepareArticles(newsArticles, replacements)

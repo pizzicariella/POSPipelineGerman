@@ -6,6 +6,7 @@ import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
 
+//TODO update
 class PosPipelineTest extends AnyFunSuite{
 
   val sc: SparkSession = SparkSession

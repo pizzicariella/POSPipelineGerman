@@ -1,6 +1,6 @@
 package daos
 
-import model.{AnnotatedArticle, NewsArticle}
+import model.AnnotatedArticle
 import org.apache.spark.sql.DataFrame
 
 trait DAO {
@@ -10,7 +10,7 @@ trait DAO {
    * limit: maximum number of articles
    * @return A Sequence containing NewsArticle objects.
    */
-  def getNewsArticles(limit: Option[Int], source: String): DataFrame//Seq[NewsArticle]
+  def getNewsArticles(limit: Option[Int], source: String): DataFrame
 
   /**
    * Writes single analysed article to destination.

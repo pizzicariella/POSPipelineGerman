@@ -1,9 +1,10 @@
 package model
 
 import org.scalatest.funsuite.AnyFunSuite
-import spray.json.{JsArray, JsObject}
+import spray.json.JsObject
 
-class AnalysedArticleTest extends AnyFunSuite{
+//TODO update
+class AnnotatedArticleTest extends AnyFunSuite{
 
   val testArticle = AnnotatedArticle("test_1",
     "www.test.de",

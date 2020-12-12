@@ -10,9 +10,9 @@ import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.SparkSession
 import org.scalatest.funsuite.AnyFunSuite
 import utils.Conversion
-
 import scala.reflect.io.Directory
 
+//TODO update
 //This tests requires correctly configured database that contains documents with NewsArticle columns.
 class PosTrainerTest extends AnyFunSuite{
 
@@ -29,7 +29,7 @@ class PosTrainerTest extends AnyFunSuite{
   val dao = new InMemoryDao(spark)
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
     (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
-  val newsArticles = Conversion.prepareArticles(dao.getNewsArticles(Some(20), articleFile), replacements)
+  val newsArticles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(20), articleFile), replacements)
 
   val posTrainer = new PosTrainer(spark, Some(20))
 

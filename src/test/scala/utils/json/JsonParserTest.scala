@@ -3,6 +3,7 @@ package utils.json
 import org.scalatest.funsuite.AnyFunSuite
 import utils.FileIO
 
+//TODO delete if not needed any longer
 class JsonParserTest extends AnyFunSuite{
 
   val pathToTestFile = "src/test/resources/testArticle.json"

@@ -1,6 +1,5 @@
 package training
 
-import model.{AnnotatedArticle, NewsArticle}
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.DataFrame
 

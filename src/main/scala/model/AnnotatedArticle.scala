@@ -1,6 +1,6 @@
 package model
 
-import spray.json.{DefaultJsonProtocol, JsArray, JsNumber, JsObject, JsString, JsValue, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, JsArray, JsObject, JsString, JsValue, RootJsonFormat}
 
 case class AnnotatedArticle(id: String,
                            longUrl: String,
@@ -16,6 +16,7 @@ case class AnnotatedArticle(id: String,
   override def toString: String = Strings.analysedArticleString(id, longUrl, crawlTime, text, annotationsPos)
 }
 
+//TODO update if needed else delete
 object AnalysedArticleJsonProtocol extends DefaultJsonProtocol{
 
   implicit object AnnotatedArticleJsonFormat extends RootJsonFormat[AnnotatedArticle] {

@@ -29,7 +29,7 @@ object EvaluationRunner {
 
     val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
       (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
-    val articles = Conversion.prepareArticles(dao.getNewsArticles(None, articlesToEvaluate), replacements)
+    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None, articlesToEvaluate), replacements)
 
     val posPipeline = new PosPipeline(spark, posModel)
 

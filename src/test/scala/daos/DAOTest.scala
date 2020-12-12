@@ -6,6 +6,7 @@ import daos.memory.InMemoryDao
 import model.Strings
 import org.apache.spark.sql.SparkSession
 
+//TODO update
 class DAOTest extends AnyFunSuite{
 
   val articleFile = ConfigFactory.load().getString(Strings.configTestFile)

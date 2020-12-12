@@ -4,7 +4,6 @@ import com.johnsnowlabs.nlp.annotators.pos.perceptron.PerceptronModel
 import com.johnsnowlabs.nlp.annotator.{LemmatizerModel, Normalizer, SentenceDetector, Tokenizer}
 import com.johnsnowlabs.nlp.{DocumentAssembler, Finisher}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.PipelineTrait
 import model.Strings
@@ -12,8 +11,6 @@ import model.Strings
 class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTrait{
 
   //val lemmatizer_model = "src/main/resources/lemma_de_2.0.8_2.4_1561248996126"
-
-  import spark.implicits._
 
   val documentAssembler = new DocumentAssembler()
     .setInputCol(Strings.columnText)
@@ -68,26 +65,12 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     pipeline.fit(articles).transform(articles)
   }
 
-  /*def replace(articlesDf: DataFrame,
-              replacements: Map[String, String]): DataFrame = {
-    var articlesVar = articlesDf
-    for((pattern, replacement) <- replacements){
-      articlesVar = articlesVar.withColumn(Strings.columnText,
-        regexp_replace(articlesVar(Strings.columnText), pattern, replacement))
-    }
-    articlesVar
-  }*/
-
   override def train(articles: DataFrame): PipelineModel = {
-    //val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    //val dataEdited = replace(data, replacements)
     pipeline.fit(articles)
   }
 
   override def annotate(articles: DataFrame,
                         path: String): DataFrame = {
-    //val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    //val dataEdited = replace(data, replacements)
     val model = PipelineModel.load(path)
     model.transform(articles)
   }

@@ -3,6 +3,7 @@ package utils.json
 import model.{AnnotatedArticle, PosAnnotation, PosPercentage}
 import org.scalatest.funsuite.AnyFunSuite
 
+//TODO delete if not needed any longer
 class JsonComposerTest extends AnyFunSuite{
 
   val testArticle = AnnotatedArticle("test_1",
