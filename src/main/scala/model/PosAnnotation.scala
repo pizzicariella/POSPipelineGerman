@@ -7,6 +7,7 @@ case class PosAnnotation(begin: Int, end: Int, tag: String){
   override def toString: String = "[begin: "+begin+", end: "+end+", tag: "+tag+"]"
 }
 
+//TODO delete if not needed anymore
 object PosAnnotationJsonProtocol extends DefaultJsonProtocol{
 
   implicit object PosAnnotationJsonFormat extends RootJsonFormat[PosAnnotation] {

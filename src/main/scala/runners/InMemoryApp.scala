@@ -2,9 +2,8 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import meta.ExtraInformation
-import model.{AnnotatedArticle, PosAnnotation, Strings}
-import org.apache.spark.sql.{Row, SparkSession}
+import model.Strings
+import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
@@ -15,7 +14,7 @@ object InMemoryApp {
     val targetFile = ConfigFactory.load().getString("app.target_inmemoryfile")
     val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
-    val sc: SparkSession = SparkSession
+    val spark: SparkSession = SparkSession
       .builder()
       .appName(Strings.sparkParamsAppName)
       .master(Strings.sparkParamsLocal)
@@ -23,42 +22,18 @@ object InMemoryApp {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val dao = new InMemoryDao()
+    val dao = new InMemoryDao(spark)
     val articles = dao.getNewsArticles(Some(200), articleFile)
+    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+    val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
 
-    val articlesWithText = Conversion.prepareArticles(articles)
+    val posPipeline = new PosPipeline(spark, posModel)
 
-    val posPipeline = new PosPipeline(sc, posModel)
-    val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-      Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
-    val annotations = posPipeline.runPipeline(articlesWithText, replacements)
+    val annotations = posPipeline.runPipeline(articlesWithText)
 
-    val metaTextPosDf = annotations.select(Strings.columnId,
-      Strings.columnLongUrl,
-      Strings.columnCrawlTime,
-      Strings.columnText,
-      Strings.columnPos)
+    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
 
-    val analysedArticles = metaTextPosDf
-      .rdd
-      .map(row => {
-        val posList = row.getSeq[Row](4)
-          .map(innerRow => PosAnnotation(innerRow.getInt(1),
-            innerRow.getInt(2),
-            innerRow.getString(3))
-          ).toList
-
-        AnnotatedArticle(row.getString(0),
-          row.getString(1),
-          row.getString(2),
-          row.getString(3),
-          posList,
-          ExtraInformation.getPosPercentage(posList)
-        )
-      }
-      )
-      .collect()
-
-    dao.writeArticles(analysedArticles, targetFile)
+    dao.writeArticles(annotatedArticles, targetFile)
   }
 }

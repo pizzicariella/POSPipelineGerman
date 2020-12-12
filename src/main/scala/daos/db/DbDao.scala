@@ -3,14 +3,17 @@ package daos.db
 import daos.DAO
 import org.mongodb.scala.{Document, MongoClient, MongoCollection}
 import daos.db.DbUtils._
-import model.{AnnotatedArticle, NewsArticle, Strings}
-import utils.json.{JsonComposer, JsonParser}
+import model.{AnnotatedArticle, Strings}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import utils.json.JsonComposer
 
+//TODO when mongodb is working integrate spark connector to read directly from mongo to rdd
 class DbDao(val userName: String,
             val pw: String,
             val serverAddress: String,
             val port: String,
-            val db: String) extends DAO{
+            val db: String,
+            val spark: SparkSession) extends DAO{
 
   val mongoClient = createClient(userName, pw, serverAddress, port, db)
 
@@ -28,7 +31,7 @@ class DbDao(val userName: String,
     mongoClient.getDatabase(dbName).getCollection(collectionName)
   }
 
-  override def getNewsArticles(limit: Option[Int], collectionName: String): Seq[NewsArticle] = {
+  override def getNewsArticles(limit: Option[Int], collectionName: String): DataFrame = {//Seq[NewsArticle] = {
     val docs = getCollectionFromDb(db, collectionName, mongoClient).find()
 
     val results = limit match {
@@ -36,7 +39,19 @@ class DbDao(val userName: String,
       case None => docs.results()
     }
 
-    results.map(doc => JsonParser.parseNewsArticle(doc.toJson()))
+    import spark.implicits._
+
+    val jsonlist = results.map(_.toJson())
+    spark.read.json(spark.createDataset[String](jsonlist))
+      .drop("short_url",
+        "keywords",
+        "published_time",
+        "news_site",
+        "image_links",
+        "description",
+        "authors",
+        "links")
+    //results.map(doc => JsonParser.parseNewsArticle(doc.toJson()))
   }
 
   override def writeArticle(article: AnnotatedArticle, collectionName: String): Unit = {
@@ -56,5 +71,5 @@ class DbDao(val userName: String,
    * @param articles
    * @param destination
    */
-  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = ???
+  override def writeArticles(articles: DataFrame, destination: String): Unit = ???
 }

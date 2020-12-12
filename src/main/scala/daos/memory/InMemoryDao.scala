@@ -1,25 +1,33 @@
 package daos.memory
 
+import java.io.File
 import daos.DAO
-import model.{AnnotatedArticle, NewsArticle}
-import utils.FileIO
-import utils.json.JsonComposer
-import utils.json.JsonParser.parseNewsArticle
+import model.AnnotatedArticle
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
-class InMemoryDao() extends DAO{
+import scala.reflect.io.Directory
 
-  override def getNewsArticles(limit: Option[Int], file: String): Seq[NewsArticle] = {
 
-    val articles = FileIO.readJsonFile(file)
+class InMemoryDao(val spark: SparkSession) extends DAO{
 
-    val until = limit match {
-      case Some(x) => x
-      case None => articles.size
+  override def getNewsArticles(limit: Option[Int], file: String): DataFrame = {
+
+    val articles = spark.read.json(file)
+      .drop("short_url",
+        "keywords",
+        "published_time",
+        "news_site",
+        "image_links",
+        "description",
+        "authors",
+        "links")
+
+    limit match {
+      case Some(x) => articles.limit(x)
+      case None => articles
     }
-
-    val sliced = articles.slice(0, until)
-    sliced.map(doc => parseNewsArticle(doc))
   }
+
 
   override def writeArticle(article: AnnotatedArticle, destination: String): Unit = ???
 
@@ -29,9 +37,10 @@ class InMemoryDao() extends DAO{
    * @param articles
    * @param destination
    */
-    //TODO test
-  override def writeArticles(articles: Seq[AnnotatedArticle], destination: String): Unit = {
-    val jsonList = articles.map(article => JsonComposer.composeAnalysedArticleJson(article))
-    FileIO.writeJsonFile(destination, jsonList)
+
+  override def writeArticles(articles: DataFrame, destination: String): Unit = {
+      new Directory(new File(destination)).deleteRecursively()
+      articles.write.json(destination)
   }
 }
+

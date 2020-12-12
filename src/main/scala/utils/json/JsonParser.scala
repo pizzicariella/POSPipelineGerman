@@ -4,6 +4,8 @@ import model.{NewsArticle, Strings}
 import spray.json.DefaultJsonProtocol._
 import spray.json._
 
+
+//TODO delete if not needed any longer
 object JsonParser {
 
   def parseNewsArticle(json: String): NewsArticle = {

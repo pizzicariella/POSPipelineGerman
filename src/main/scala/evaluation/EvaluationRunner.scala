@@ -17,22 +17,23 @@ object EvaluationRunner {
   val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
   def main(args: Array[String]): Unit = {
-    val sc: SparkSession = SparkSession
+    val spark: SparkSession = SparkSession
       .builder()
       .appName(Strings.sparkParamsAppName)
       .master(Strings.sparkParamsLocal)
       .getOrCreate()
 
-    import sc.implicits._
+    import spark.implicits._
 
-    val dao = new InMemoryDao()
+    val dao = new InMemoryDao(spark)
 
-    val articles = dao.getNewsArticles(None, articlesToEvaluate).map(article => Conversion.switchArticleFormat(article))
+    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None, articlesToEvaluate), replacements)
 
-    val posPipeline = new PosPipeline(sc, posModel)
-    val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-      Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
-    val annotations = posPipeline.runPipeline(articles, replacements)
+    val posPipeline = new PosPipeline(spark, posModel)
+
+    val annotations = posPipeline.runPipeline(articles)
     val tokenAndPos = annotations
       .select("finished_normalized", "finished_pos")
       .map(row => row.getSeq[String](0).toList.zip(row.getSeq[String](1).toList))

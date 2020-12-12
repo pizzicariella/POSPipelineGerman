@@ -2,10 +2,9 @@ package training.pos
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import meta.ExtraInformation
-import model.{AnnotatedArticle, NewsArticle, PosAnnotation, Strings}
+import model.Strings
 import org.apache.spark.ml.PipelineModel
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.pos.PosPipeline
 import training.Trainer
 import utils.Conversion
@@ -19,20 +18,20 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
   val db = ConfigFactory.load().getString(Strings.dbConfigDb)
   val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
 
-  val dao = new DbDao(userName, pw, serverAddress, port, db)
+  val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
   val articles = dao.getNewsArticles(numArticles, collectionName)
   dao.close()
-  val articlesWithText = Conversion.prepareArticles(articles)
+  val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+    (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+  val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
 
   val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
   val posPipeline = new PosPipeline(spark, posModel)
-  val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-    Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
 
   override def startTraining(path: Option[String]): PipelineModel = {
 
-    val model = posPipeline.train(articlesWithText, replacements)
+    val model = posPipeline.train(articlesWithText)
 
     path match {
       case None => model
@@ -42,38 +41,15 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       }
     }
 
-  override def results(articles: Option[Seq[NewsArticle]], path: String, save: Boolean): Seq[AnnotatedArticle] = {
+  //TODO divide in 2 methods, 1 that uses annotate method, one that uses run method and get rid of option
+  override def results(articles: Option[DataFrame], path: String, save: Boolean): DataFrame = {
 
     val annotatedDf = articles match {
-      case None => posPipeline.annotate(articlesWithText, replacements, path)
-      case Some(articles) => posPipeline.annotate(Conversion.prepareArticles(articles), replacements, path)
+      case None => posPipeline.annotate(articlesWithText, path)
+      case Some(articles) => posPipeline.annotate(Conversion.prepareArticlesForPipeline(articles, replacements), path)
     }
 
-    val metaTextPosDf = annotatedDf.select(Strings.columnId,
-      Strings.columnLongUrl,
-      Strings.columnCrawlTime,
-      Strings.columnText,
-      Strings.columnPos)
-
-    val analysedArticles = metaTextPosDf
-      .rdd
-      .map(row => {
-        val posList = row.getSeq[Row](4)
-          .map(innerRow => PosAnnotation(innerRow.getInt(1),
-            innerRow.getInt(2),
-            innerRow.getString(3))
-          ).toList
-
-        AnnotatedArticle(row.getString(0),
-          row.getString(1),
-          row.getString(2),
-          row.getString(3),
-          posList,
-          ExtraInformation.getPosPercentage(posList)
-        )
-      }
-      )
-      .collect()
+    val finalDf = Conversion.prepareArticlesForSaving(annotatedDf, spark)
 
     if(save){
       val targetUserName = ConfigFactory.load().getString(Strings.targetDbConfigUser)
@@ -83,12 +59,11 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
       val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
-      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb)
-      analysedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
+      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
+      //finalDf.foreach(article => targetDao.writeArticle(article, targetCollectionName))
       targetDao.close()
     }
 
-    analysedArticles
-
+    finalDf
   }
 }

@@ -2,12 +2,12 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
-import meta.ExtraInformation
-import model.{AnnotatedArticle, PosAnnotation, Strings}
-import org.apache.spark.sql.{Row, SparkSession}
+import model.Strings
+import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
+//TODO update when db is working
 object OriginalApp {
   def main(args: Array[String]): Unit = {
 
@@ -27,7 +27,7 @@ object OriginalApp {
 
     val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
-    val sc: SparkSession = SparkSession
+    val spark: SparkSession = SparkSession
       .builder()
       .appName(Strings.sparkParamsAppName)
       .master(Strings.sparkParamsLocal)
@@ -35,45 +35,23 @@ object OriginalApp {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val dao = new DbDao(userName, pw, serverAddress, port, db)
+    val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
     val articles = dao.getNewsArticles(Some(200), collectionName)
     dao.close()
 
-    val articlesWithText = Conversion.prepareArticles(articles)
+    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
+      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
 
-    val posPipeline = new PosPipeline(sc, posModel)
-    val replacements = Map(Strings.replacePatternSpecialWhitespaces -> Strings.replacementWhitespaces,
-      Strings.replacePatternMissingWhitespaces -> Strings.replacementMissingWhitespaces)
-    val annotations = posPipeline.runPipeline(articlesWithText, replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
 
-    val metaTextPosDf = annotations.select(Strings.columnId,
-      Strings.columnLongUrl,
-      Strings.columnCrawlTime,
-      Strings.columnText,
-      Strings.columnPos)
+    val posPipeline = new PosPipeline(spark, posModel)
 
-    val analysedArticles = metaTextPosDf
-      .rdd
-      .map(row => {
-        val posList = row.getSeq[Row](4)
-          .map(innerRow => PosAnnotation(innerRow.getInt(1),
-            innerRow.getInt(2),
-            innerRow.getString(3))
-          ).toList
+    val annotations = posPipeline.runPipeline(articlesWithText)
 
-        AnnotatedArticle(row.getString(0),
-          row.getString(1),
-          row.getString(2),
-          row.getString(3),
-          posList,
-          ExtraInformation.getPosPercentage(posList)
-        )
-      }
-      )
-      .collect()
+    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
 
-    val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb)
-    analysedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
+    val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
+    //annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
     targetDao.close()
   }
 }

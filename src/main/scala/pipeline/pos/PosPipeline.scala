@@ -4,7 +4,6 @@ import com.johnsnowlabs.nlp.annotators.pos.perceptron.PerceptronModel
 import com.johnsnowlabs.nlp.annotator.{LemmatizerModel, Normalizer, SentenceDetector, Tokenizer}
 import com.johnsnowlabs.nlp.{DocumentAssembler, Finisher}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.sql.functions.regexp_replace
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.PipelineTrait
 import model.Strings
@@ -12,8 +11,6 @@ import model.Strings
 class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTrait{
 
   //val lemmatizer_model = "src/main/resources/lemma_de_2.0.8_2.4_1561248996126"
-
-  import spark.implicits._
 
   val documentAssembler = new DocumentAssembler()
     .setInputCol(Strings.columnText)
@@ -48,7 +45,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     .setOutputCol(Strings.columnPos)
 
   val finisher = new Finisher()
-    .setInputCols(Strings.columnToken, Strings.columnNormalized, Strings.columnPos)
+    .setInputCols(Strings.columnPos)
     .setCleanAnnotations(false)
     .setIncludeMetadata(false)
 
@@ -64,35 +61,17 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
 
 
 
-   override def runPipeline(articles: Seq[(String, String, String, String)],
-                            replacements: Map[String, String]): DataFrame = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
-    pipeline.fit(dataEdited).transform(dataEdited)
+   override def runPipeline(articles: DataFrame): DataFrame = {
+    pipeline.fit(articles).transform(articles)
   }
 
-  def replace(articlesDf: DataFrame,
-              replacements: Map[String, String]): DataFrame = {
-    var articlesVar = articlesDf
-    for((pattern, replacement) <- replacements){
-      articlesVar = articlesVar.withColumn(Strings.columnText,
-        regexp_replace(articlesVar(Strings.columnText), pattern, replacement))
-    }
-    articlesVar
+  override def train(articles: DataFrame): PipelineModel = {
+    pipeline.fit(articles)
   }
 
-  override def train(articles: Seq[(String, String, String, String)], replacements: Map[String, String]): PipelineModel = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
-    pipeline.fit(dataEdited)
-  }
-
-  override def annotate(articles: Seq[(String, String, String, String)],
-                        replacements: Map[String, String],
+  override def annotate(articles: DataFrame,
                         path: String): DataFrame = {
-    val data = articles.toDF(Strings.columnId, Strings.columnLongUrl, Strings.columnCrawlTime, Strings.columnText)
-    val dataEdited = replace(data, replacements)
     val model = PipelineModel.load(path)
-    model.transform(dataEdited)
+    model.transform(articles)
   }
 }
