@@ -32,6 +32,9 @@ object InMemoryApp {
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
+    //annotations.select("sentence").show(false)
+
+
     val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
 
     dao.writeArticles(annotatedArticles, targetFile)

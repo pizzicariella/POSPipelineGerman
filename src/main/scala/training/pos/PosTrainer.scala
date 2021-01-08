@@ -18,7 +18,8 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
   val db = ConfigFactory.load().getString(Strings.dbConfigDb)
   val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
 
-  val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
+  //val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
+  val dao = new DbDao(spark)
   val articles = dao.getNewsArticles(numArticles, collectionName)
   dao.close()
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
@@ -59,9 +60,9 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
       val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
       val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
-      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
+      //val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
       //finalDf.foreach(article => targetDao.writeArticle(article, targetCollectionName))
-      targetDao.close()
+      //targetDao.close()
     }
 
     finalDf

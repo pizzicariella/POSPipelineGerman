@@ -35,7 +35,8 @@ object OriginalApp {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
+    //val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
+    val dao = new DbDao(spark)
     val articles = dao.getNewsArticles(Some(200), collectionName)
     dao.close()
 
@@ -50,8 +51,8 @@ object OriginalApp {
 
     val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
 
-    val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
+    //val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
     //annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
-    targetDao.close()
+    //targetDao.close()
   }
 }
