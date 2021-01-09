@@ -20,10 +20,10 @@ class DAOTest extends AnyFunSuite{
     .getOrCreate()
 
   test("getArticles returns Seq with correct size"){
-    val dao = new InMemoryDao(spark)
-    val result1 = dao.getNewsArticles(Some(20), articleFile)
+    val dao = new InMemoryDao(spark, articleFile, "none")
+    val result1 = dao.getNewsArticles(Some(20))
     assert(result1.count() === 20)
-    val result2 = dao.getNewsArticles(Some(200), articleFile)
+    val result2 = dao.getNewsArticles(Some(200))
     assert(result2.count() === 100)
   }
 }

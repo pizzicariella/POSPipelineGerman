@@ -10,12 +10,13 @@ trait DAO {
    * limit: maximum number of articles
    * @return A Sequence containing NewsArticle objects.
    */
-  def getNewsArticles(limit: Option[Int], source: String): DataFrame
+  def getNewsArticles(limit: Option[Int]): DataFrame
 
   /**
    * Writes single analysed article to destination.
    * @param article
    */
+  //TODO remove?
   def writeArticle(article: AnnotatedArticle, destination: String)
 
   /**
@@ -23,5 +24,5 @@ trait DAO {
    * @param articles
    * @param destination
    */
-  def writeArticles(articles: DataFrame, destination: String)
+  def writeArticles(articles: DataFrame)
 }

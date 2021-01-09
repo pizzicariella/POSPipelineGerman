@@ -22,8 +22,8 @@ object InMemoryApp {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val dao = new InMemoryDao(spark)
-    val articles = dao.getNewsArticles(Some(200), articleFile)
+    val dao = new InMemoryDao(spark, articleFile, targetFile)
+    val articles = dao.getNewsArticles(Some(200))
     val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
       (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
@@ -34,6 +34,6 @@ object InMemoryApp {
 
     val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
 
-    dao.writeArticles(annotatedArticles, targetFile)
+    dao.writeArticles(annotatedArticles)
   }
 }

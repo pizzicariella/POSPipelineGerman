@@ -25,11 +25,11 @@ object EvaluationRunner {
 
     import spark.implicits._
 
-    val dao = new InMemoryDao(spark)
+    val dao = new InMemoryDao(spark, articlesToEvaluate, "none")
 
     val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
       (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
-    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None, articlesToEvaluate), replacements)
+    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)
 
     val posPipeline = new PosPipeline(spark, posModel)
 

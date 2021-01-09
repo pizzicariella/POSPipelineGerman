@@ -8,6 +8,7 @@ import org.mongodb.scala._
 /**
  * @Source https://github.com/mongodb/mongo-scala-driver/blob/master/examples/src/test/scala/tour/Helpers.scala
  */
+//TODO remove?
 object DbUtils {
 
   implicit class DocumentObservable[C](val observable: Observable[Document]) extends ImplicitObservable[Document] {

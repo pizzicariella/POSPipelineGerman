@@ -18,9 +18,8 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
   val db = ConfigFactory.load().getString(Strings.dbConfigDb)
   val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
 
-  val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
-  val articles = dao.getNewsArticles(numArticles, collectionName)
-  dao.close()
+  val dao = new DbDao(spark)
+  val articles = dao.getNewsArticles(numArticles)
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
     (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
   val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
@@ -52,16 +51,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
     val finalDf = Conversion.prepareArticlesForSaving(annotatedDf, spark)
 
     if(save){
-      val targetUserName = ConfigFactory.load().getString(Strings.targetDbConfigUser)
-      val targetPw = ConfigFactory.load().getString(Strings.targetDbConfigPw)
-      val targetServerAddress = ConfigFactory.load().getString(Strings.targetDbConfigServer)
-      val targetPort = ConfigFactory.load().getString(Strings.targetDbConfigPort)
-      val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
-      val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
-
-      val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
-      //finalDf.foreach(article => targetDao.writeArticle(article, targetCollectionName))
-      targetDao.close()
+      dao.writeArticles(finalDf)
     }
 
     finalDf

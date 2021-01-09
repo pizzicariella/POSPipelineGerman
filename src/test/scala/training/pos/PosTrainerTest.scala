@@ -26,10 +26,10 @@ class PosTrainerTest extends AnyFunSuite{
 
   val articleFile = ConfigFactory.load().getString(Strings.configTestFile)
   val path = "src/test/resources/posPipelineModel"
-  val dao = new InMemoryDao(spark)
+  val dao = new InMemoryDao(spark, articleFile, "none")
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
     (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
-  val newsArticles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(20), articleFile), replacements)
+  val newsArticles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(20)), replacements)
 
   val posTrainer = new PosTrainer(spark, Some(20))
 
