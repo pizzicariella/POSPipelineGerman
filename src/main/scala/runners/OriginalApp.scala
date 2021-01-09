@@ -7,7 +7,7 @@ import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
-//TODO update when db is working
+//TODO delete?
 object OriginalApp {
   def main(args: Array[String]): Unit = {
 
@@ -31,14 +31,16 @@ object OriginalApp {
       .builder()
       .appName(Strings.sparkParamsAppName)
       .master(Strings.sparkParamsLocal)
+      .config("spark.mongodb.input.uri", "mongodb://"+userName+":"+pw+"@"+serverAddress+":"+port+"/"+db+"."+collectionName)
+      .config("spark.mongodb.output.uri", "mongodb://"+targetUserName+":"+targetPw+"@"+targetServerAddress+":"
+        +targetPort+"/"+targetDb+"."+targetCollectionName)
       .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
     //val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
     val dao = new DbDao(spark)
-    val articles = dao.getNewsArticles(Some(200), collectionName)
-    dao.close()
+    val articles = dao.getNewsArticles(Some(200))
 
     val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
       (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))

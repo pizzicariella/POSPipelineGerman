@@ -1,7 +1,7 @@
 package utils
 
 import meta.ExtraInformation
-import model.{AnnotatedArticle, NewsArticle, PosAnnotation, PosPercentage, Strings}
+import model.{AnnotatedArticle, PosAnnotation, PosPercentage, Strings}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace}
 
@@ -63,7 +63,7 @@ object Conversion {
 
         AnnotatedArticle(row.getStruct(0).getString(0),
           row.getString(1),
-          row.getStruct(2).getStruct(0).getString(0),
+          row.getTimestamp(2),
           row.getString(3),
           posList,
           percentages

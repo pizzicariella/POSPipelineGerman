@@ -32,7 +32,7 @@ class ConversionTest extends AnyFunSuite{
     .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
     .getOrCreate()
 
-  val dao = new InMemoryDao(spark)
+  //val dao = new InMemoryDao(spark)
 
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
     (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
