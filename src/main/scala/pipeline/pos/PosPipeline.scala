@@ -55,8 +55,8 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
       sentenceDetector,
       tokenizer,
       normalizer,
-      posTagger,
-      finisher
+      posTagger
+      //finisher
     ))
 
 

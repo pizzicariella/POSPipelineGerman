@@ -1,1 +1,0 @@
-{"class":"com.johnsnowlabs.nlp.Finisher","timestamp":1610360187976,"sparkVersion":"2.4.7","uid":"finisher_4b2747e45514","paramMap":{"includeMetadata":false,"cleanAnnotations":false,"inputCols":["pos"]},"defaultParamMap":{"includeMetadata":false,"cleanAnnotations":true,"parseEmbeddingsVectors":false,"outputAsArray":true}}

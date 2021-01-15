@@ -36,6 +36,6 @@ object App {
 
     val trainer = new PosTrainer(sc, Some(500))
     trainer.startTraining(Some(path))
-    trainer.results(None, path, true)
+    trainer.results(None, path, false)
   }
 }
