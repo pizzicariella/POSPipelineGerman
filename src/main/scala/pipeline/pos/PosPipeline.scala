@@ -32,6 +32,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
   val normalizer = new Normalizer()
     .setInputCols(Array(Strings.columnToken))
     .setOutputCol(Strings.columnNormalized)
+    .setCleanupPatterns(Array("[^A-Za-z-äöü0-9](?![(?<=\\d),(?=\\d)])")) //(?<=[0-9]),(?=[0-9])
 
   //auf den 1. blick nicht wirklich zufriedenstellend
   /*val lemmatizer = LemmatizerModel
@@ -45,7 +46,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     .setOutputCol(Strings.columnPos)
 
   val finisher = new Finisher()
-    .setInputCols(Strings.columnPos)
+    .setInputCols(Array("token", "normalized", Strings.columnPos))
     .setCleanAnnotations(false)
     .setIncludeMetadata(false)
 
@@ -55,8 +56,8 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
       sentenceDetector,
       tokenizer,
       normalizer,
-      posTagger
-      //finisher
+      posTagger,
+      finisher
     ))
 
 
