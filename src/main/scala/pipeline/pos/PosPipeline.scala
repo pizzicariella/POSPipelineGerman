@@ -10,7 +10,7 @@ import model.Strings
 
 class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTrait{
 
-  //val lemmatizer_model = "src/main/resources/lemma_de_2.0.8_2.4_1561248996126"
+  val lemmatizer_model = "src/main/resources/models/lemma_de_2.0.8_2.4_1561248996126"
 
   val documentAssembler = new DocumentAssembler()
     .setInputCol(Strings.columnText)
@@ -32,23 +32,28 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
   val normalizer = new Normalizer()
     .setInputCols(Array(Strings.columnToken))
     .setOutputCol(Strings.columnNormalized)
-    .setCleanupPatterns(Array("[^A-Za-z-äöü0-9](?![(?<=\\d),(?=\\d)])")) //(?<=[0-9]),(?=[0-9])
+    //Clean everything but higher and lower case letters, including ä,ö,ü,ß, - numbers and super/subscript.
+    // Dont't remove , if between two numbers.
+    .setCleanupPatterns(Array("[^A-Za-z-äöüÄÖÜß0-9" +
+      "\\u006E\\u00B0\\u00B2\\u00B3\\u00B9\\u02AF\\u0670\\u0711\\u2121\\u213B\\u2207\\u29B5\\uFC5B-\\uFC5D\\uFC63" +
+      "\\uFC90\\uFCD9\\u2070\\u2071\\u2074-\\u208E\\u2090-\\u209C\\u0345\\u0656\\u17D2\\u1D62-\\u1D6A\\u2A27\\u2C7C]" +
+      "(?![(?<=\\d),(?=\\d)])"))
 
   //auf den 1. blick nicht wirklich zufriedenstellend
-  /*val lemmatizer = LemmatizerModel
+  val lemmatizer = LemmatizerModel
     .load(lemmatizer_model)
     .setInputCols(Array("normalized"))
-    .setOutputCol("lemma")*/
+    .setOutputCol("lemma")
 
   val posTagger = PerceptronModel
     .load(posModel)
     .setInputCols(Array(Strings.columnSentence, Strings.columnNormalized))
     .setOutputCol(Strings.columnPos)
 
-  val finisher = new Finisher()
-    .setInputCols(Array("token", "normalized", Strings.columnPos))
+  /*val finisher = new Finisher()
+    .setInputCols(Array("token", "normalized", Strings.columnPos, "lemma"))
     .setCleanAnnotations(false)
-    .setIncludeMetadata(false)
+    .setIncludeMetadata(false)*/
 
   val pipeline = new Pipeline()
     .setStages(Array(
@@ -57,7 +62,8 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
       tokenizer,
       normalizer,
       posTagger,
-      finisher
+      lemmatizer//,
+      //finisher
     ))
 
 

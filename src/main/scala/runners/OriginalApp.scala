@@ -51,10 +51,13 @@ object OriginalApp {
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    annotations.select("text","finished_token", "finished_normalized").show(false)
+    //annotations.select("text","pos", "lemma").show(false)
+    //annotations.printSchema()
 
 
-    //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
+    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
+    annotatedArticles.show()
+    annotatedArticles.printSchema()
 
     //val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
     //annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))

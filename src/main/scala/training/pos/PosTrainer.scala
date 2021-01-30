@@ -29,7 +29,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
   val posPipeline = new PosPipeline(spark, posModel)
 
   //TODO only one class should read or write
-  override def startTraining(path: Option[String]): PipelineModel = {
+  override def startTraining(path: Option[String] = None): PipelineModel = {
 
     val model = posPipeline.train(articlesWithText)
 
