@@ -34,8 +34,8 @@ object App {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val trainer = new PosTrainer(sc, Some(500))
+    val trainer = new PosTrainer(sc, Some(200))
     trainer.startTraining(Some(path))
-    trainer.results(None, path, false)
+    trainer.results(None, path, true)
   }
 }

@@ -11,13 +11,6 @@ import utils.Conversion
 
 class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
 
-  val userName = ConfigFactory.load().getString(Strings.dbConfigUser)
-  val pw = ConfigFactory.load().getString(Strings.dbConfigPw)
-  val serverAddress = ConfigFactory.load().getString(Strings.dbConfigServer)
-  val port = ConfigFactory.load().getString(Strings.dbConfigPort)
-  val db = ConfigFactory.load().getString(Strings.dbConfigDb)
-  val collectionName = ConfigFactory.load().getString(Strings.dbConfigCollection)
-
   val dao = new DbDao(spark)
   val articles = dao.getNewsArticles(numArticles)
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
@@ -28,31 +21,32 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
 
   val posPipeline = new PosPipeline(spark, posModel)
 
-  //TODO only one class should read or write
-  override def startTraining(path: Option[String]): PipelineModel = {
+  override def startTraining(path: Option[String] = None): PipelineModel = {
 
-    val model = posPipeline.train(articlesWithText)
+    val posPipeline_ = posPipeline
+    val articlesWithText_ = articlesWithText
 
-    path match {
-      case None => model
-      case Some(path) => {
-        model.write.overwrite().save(path)
-        model }
-      }
-    }
+    posPipeline_.train(articlesWithText_, path)
+
+  }
 
   //TODO divide in 2 methods, 1 that uses annotate method, one that uses run method and get rid of option
   override def results(articles: Option[DataFrame], path: String, save: Boolean): DataFrame = {
 
+    val posPipeline_ = posPipeline
+    val articlesWithText_ = articlesWithText
+    val replacements_ = replacements
+    val dao_ = dao
+
     val annotatedDf = articles match {
-      case None => posPipeline.annotate(articlesWithText, path)
-      case Some(articles) => posPipeline.annotate(Conversion.prepareArticlesForPipeline(articles, replacements), path)
+      case None => posPipeline_.annotate(articlesWithText_, path)
+      case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles, replacements_), path)
     }
 
     val finalDf = Conversion.prepareArticlesForSaving(annotatedDf, spark)
 
     if(save){
-      dao.writeArticles(finalDf)
+      dao_.writeArticles(finalDf)
     }
 
     finalDf

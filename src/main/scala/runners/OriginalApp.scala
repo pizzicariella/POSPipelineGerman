@@ -23,7 +23,7 @@ object OriginalApp {
     val targetServerAddress = ConfigFactory.load().getString(Strings.targetDbConfigServer)
     val targetPort = ConfigFactory.load().getString(Strings.targetDbConfigPort)
     val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
-    val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
+    //val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
     val posModel = ConfigFactory.load().getString(Strings.configPosModel)
 
@@ -33,7 +33,7 @@ object OriginalApp {
       .master(Strings.sparkParamsLocal)
       .config("spark.mongodb.input.uri", "mongodb://"+userName+":"+pw+"@"+serverAddress+":"+port+"/"+db+"."+collectionName)
       .config("spark.mongodb.output.uri", "mongodb://"+targetUserName+":"+targetPw+"@"+targetServerAddress+":"
-        +targetPort+"/"+targetDb+"."+targetCollectionName)
+        +targetPort+"/"+targetDb+"."+"annotated_articles_test")
       .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
@@ -51,13 +51,11 @@ object OriginalApp {
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    annotations.select("text","finished_token", "finished_normalized").show(false)
+    annotations.select("text","pos", "lemma").show(true)
+    annotations.printSchema()
 
 
-    //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
-
-    //val targetDao = new DbDao(targetUserName, targetPw, targetServerAddress, targetPort, targetDb, spark)
-    //annotatedArticles.foreach(article => targetDao.writeArticle(article, targetCollectionName))
-    //targetDao.close()
+    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
+    dao.writeArticles(annotatedArticles)
   }
 }

@@ -9,6 +9,7 @@ case class AnnotatedArticle(_id: String,
                             crawlTime: Timestamp,
                             text: String,
                             annotationsPos: List[PosAnnotation],
+                            lemmas: List[Lemma],
                             tagPercentage: List[PosPercentage]) {
 
   //TODO delete?

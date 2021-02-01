@@ -1,7 +1,7 @@
 package utils
 
 import meta.ExtraInformation
-import model.{AnnotatedArticle, PosAnnotation, PosPercentage, Strings}
+import model.{AnnotatedArticle, Lemma, PosAnnotation, PosPercentage, Strings}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace}
 
@@ -14,11 +14,13 @@ object Conversion {
   }
 
   def prepareArticlesForSaving(articles: DataFrame, spark: SparkSession): DataFrame = {
-    val selected = articles.select(Strings.columnId,
+    val selected = articles.select(
+      Strings.columnId,
       Strings.columnLongUrl,
       Strings.columnCrawlTime,
       Strings.columnText,
-      Strings.columnPos)
+      Strings.columnPos,
+      "lemma")
 
     val dropedNested = dropNestedColumns(selected)
     createDfWithObjects(dropedNested, spark)
@@ -58,6 +60,12 @@ object Conversion {
             innerRow.getString(2))
           ).toList
 
+        val lemmas = row.getSeq[Row](5)
+          .map(innerRow => Lemma(innerRow.getInt(0),
+            innerRow.getInt(1),
+            innerRow.getString(2))
+          ).toList
+
         val percentages = ExtraInformation.getPosPercentage(posList)
           .map(percentage => PosPercentage(percentage._1, percentage._2))
 
@@ -66,6 +74,7 @@ object Conversion {
           row.getTimestamp(2),
           row.getString(3),
           posList,
+          lemmas,
           percentages
         )
       }
@@ -74,6 +83,8 @@ object Conversion {
 
   private def dropNestedColumns(df: DataFrame): DataFrame = {
     df.withColumn("pos",
-      expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as result))"))
+        expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as result))"))
+      .withColumn("lemma",
+        expr("transform(lemma, x -> struct(x.begin as beginToken, x.end as endToken, x.result as result))"))
   }
 }
