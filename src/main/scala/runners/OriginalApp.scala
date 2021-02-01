@@ -7,7 +7,6 @@ import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
-//TODO delete?
 object OriginalApp {
   def main(args: Array[String]): Unit = {
 
@@ -55,7 +54,7 @@ object OriginalApp {
     annotations.printSchema()
 
 
-    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
-    dao.writeArticles(annotatedArticles)
+    //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
+    //dao.writeArticles(annotatedArticles)
   }
 }

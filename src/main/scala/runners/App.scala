@@ -1,6 +1,7 @@
 package runners
 
 import com.typesafe.config.ConfigFactory
+import daos.db.DbDao
 import model.Strings
 import org.apache.spark.sql.SparkSession
 import training.pos.PosTrainer
@@ -23,7 +24,7 @@ object App {
     val targetDb = ConfigFactory.load().getString(Strings.targetDbConfigDb)
     val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
-    val sc: SparkSession = SparkSession
+    val spark: SparkSession = SparkSession
       .builder()
       .appName(Strings.sparkParamsAppName)
       .master(Strings.sparkParamsLocal)
@@ -34,7 +35,9 @@ object App {
       .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
       .getOrCreate()
 
-    val trainer = new PosTrainer(sc, Some(200))
+    val dao = new DbDao(spark)
+
+    val trainer = new PosTrainer(spark, Some(200), dao)
     trainer.startTraining(Some(path))
     trainer.results(None, path, true)
   }

@@ -1,28 +1,12 @@
 package utils
 
 import daos.memory.InMemoryDao
-import model.NewsArticle
 import org.scalatest.funsuite.AnyFunSuite
 import model.Strings
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import pipeline.pos.PosPipeline
 
-//TODO update
 class ConversionTest extends AnyFunSuite{
-
-  val testArticle = NewsArticle("test_1",
-    "www.test.de",
-    "1574281189000",
-    "Das Landeskriminalamt (LKA) und die Münchner Polizei",
-    "fanden in der mit Chemikalien vollgepackten Dreizimmerwohnung in Sichtweite des Gondrellplatzes",
-    "nämlich bisher mehr als 50 Kilogramm pyrotechnische Gegenstände und eine Vielzahl laut LKA vermutlich illegaler Feuerwerkskörper.")
-
-  val correctlyConverted = ("test_1",
-    "www.test.de",
-    "1574281189000",
-    "Das Landeskriminalamt (LKA) und die Münchner Polizei fanden in der mit Chemikalien vollgepackten Dreizimmerwohnung in Sichtweite des Gondrellplatzes nämlich bisher mehr als 50 Kilogramm pyrotechnische Gegenstände und eine Vielzahl laut LKA vermutlich illegaler Feuerwerkskörper.")
-
-  /*val newsArticles = FileIO.readJsonFile(ConfigFactory.load().getString(Strings.configTestFile))
-    .map(json => JsonParser.parseNewsArticle(json))*/
 
   val spark: SparkSession = SparkSession
     .builder()
@@ -32,21 +16,60 @@ class ConversionTest extends AnyFunSuite{
     .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
     .getOrCreate()
 
-  //val dao = new InMemoryDao(spark)
+  val dao = new InMemoryDao(spark, "src/test/resources/inMemoryArticles", "none")
+  val articlesBeforeConversion = dao.getNewsArticles(Some(10))
 
-  val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
-    (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+  val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
 
-  //val newsArticles = dao.getNewsArticles()
+  test("prepareArticlesForPipeline should create new text column and drop title and intro"){
+    val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion, replacements)
+    assert(result.isInstanceOf[DataFrame])
+    val columns = result.columns
+    assert(columns.contains("text"))
+    assert(!columns.contains("title"))
+    assert(!columns.contains("intro"))
+    val firstRow = result.head()
+    val text = firstRow.getString(4)
+    val firstRowBeforeConversion = articlesBeforeConversion.head
+    val title = firstRowBeforeConversion.getString(6)
+    assert(text.contains(title))
+    assert(text.contains(" $§$ "))
+  }
 
- /* test("switchArticleFormat should convert NewsArticle correctly"){
-    val converted = Conversion.switchArticleFormat(testArticle)
-    assert(converted === correctlyConverted)
-  }*/
+  test("prepareArticlesForPipeline should replace according to given replacements"){
+    val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion, replacements)
+    val testTexts = result.head(3)
+    assert(!testTexts(0).getString(4).contains(" "))
+    assert(!testTexts(1).getString(4).contains(" "))
+    assert(!testTexts(2).getString(4).contains(" "))
+    assert(!testTexts(0).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
+    assert(!testTexts(1).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
+    assert(!testTexts(2).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
+  }
 
-  /*test("prepareArticles should map Seq of NewsArticles correctly"){
-    val convertedArticles = Conversion.prepareArticles(newsArticles, replacements)
-    assert(convertedArticles.isInstanceOf[Seq[(String, String, String, String)]])
-  }*/
+  test("prepareArticlesForPipeline should remove empty text strings"){
+    val daoForBrokenFile = new InMemoryDao(spark, "src/test/resources/brokenTestFile.json", "none")
+    val brokenArticle = daoForBrokenFile.getNewsArticles(Some(1))
+    val articlesWithEmptyText = articlesBeforeConversion.union(brokenArticle)
+    val numArticles = articlesWithEmptyText.count()
+    val result = Conversion.prepareArticlesForPipeline(articlesWithEmptyText, replacements)
+    assert(result.count() === numArticles-1)
+  }
 
+  test("prepareArticlesForSaving should return DataFrame with relevant AnnotatedArticleColumns only"){
+    val posPipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+    val annotated = posPipeline.runPipeline(articlesBeforeConversion)
+    val result = Conversion.prepareArticlesForSaving(annotated, spark)
+    val columns = result.columns
+    assert(columns.contains("_id"))
+    assert(columns.contains("longUrl"))
+    assert(columns.contains("crawlTime"))
+    assert(columns.contains("text"))
+    assert(columns.contains("annotationsPos"))
+    assert(columns.contains("tagPercentage"))
+    assert(columns.contains("lemmas"))
+    assert(!columns.contains("sentence"))
+    assert(!columns.contains("document"))
+    assert(!columns.contains("normalized"))
+  }
 }

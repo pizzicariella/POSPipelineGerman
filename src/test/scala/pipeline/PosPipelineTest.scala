@@ -1,15 +1,18 @@
 package pipeline
 
-import com.typesafe.config.ConfigFactory
-import model.Strings
-import org.apache.spark.sql.SparkSession
+import daos.memory.InMemoryDao
+import org.apache.hadoop.mapred.InvalidInputException
+import org.apache.spark.ml.PipelineModel
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
 
-//TODO update
+import java.io.File
+import scala.reflect.io.Directory
+
 class PosPipelineTest extends AnyFunSuite{
 
-  val sc: SparkSession = SparkSession
+  val spark: SparkSession = SparkSession
     .builder()
     .appName("SparkNLPPlayground")
     .master("local[*]")
@@ -17,33 +20,71 @@ class PosPipelineTest extends AnyFunSuite{
     .config("spark.driver.memory", "12g")
     .getOrCreate()
 
-  import sc.implicits._
+  val dao = new InMemoryDao(spark,
+    "src/test/resources/inMemoryArticles",
+    "src/test/resources/writeTest")
 
-  val posModel = ConfigFactory.load().getString(Strings.configPosModel)
-  val text = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war.Testsentece."
-  val data = Seq(text).toDF("text")
-  val posPipeline = new PosPipeline(sc, posModel)
-  val replacements = Map(" " -> " ",
-    "(?<=[^A-Z\\d])\\b\\.\\b" -> ". ")
-  val textReplaced = "Im Jahr 1997 starben in einem Kino 59 Menschen, die meisten Besucher erstickten, nachdem ein Transformator explodiert war. Testsentece."
+  val testArticles = dao.getNewsArticles(Some(10))
+  val posPipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+  val destination = "src/test/resources/writeModelTest"
 
-  /*test("replace should replace according to pattern"){
-    val replacedDf = posPipeline.replace(data, replacements)
-    val replacedTextByMethod = replacedDf
-      .select("text")
-      .map(row => row.getString(0))
-      .collect()
-      .head
-    assert(replacedTextByMethod === textReplaced)
+  test("runPipeline should return DataFrame with necessary columns"){
+    val annotated = posPipeline.runPipeline(testArticles)
+    assert(annotated.isInstanceOf[DataFrame])
+    val columns = annotated.columns
+    assert(columns.contains("_id"))
+    assert(columns.contains("long_url"))
+    assert(columns.contains("crawl_time"))
+    assert(columns.contains("text"))
+    assert(columns.contains("document"))
+    assert(columns.contains("sentence"))
+    assert(columns.contains("token"))
+    assert(columns.contains("normalized"))
+    assert(columns.contains("pos"))
+    assert(columns.contains("lemma"))
   }
 
-  test("replaceSplitChars should not replace anything if replacement map is empty"){
-    val unreplacedDf = posPipeline.replace(data, Map.empty)
-    val unreplacedText = unreplacedDf
-      .select("text")
-      .map(row => row.getString(0))
-      .collect()
-      .head
-    assert(unreplacedText === text)
-  }*/
+  test("train should return PipelineModel"){
+    val model = posPipeline.train(testArticles)
+    assert(model.isInstanceOf[PipelineModel])
+  }
+
+  test("train with write Option on should write model to given destination"){
+    val file = new File(destination)
+    if(file.exists()){
+      new Directory(file).deleteRecursively()
+    }
+    posPipeline.train(testArticles, Option(destination))
+    assert(new File(destination).exists())
+  }
+
+  test("train without write Option should not write model to given destination"){
+    val currentTime = System.currentTimeMillis()
+    posPipeline.train(testArticles, None)
+    val file = new File(destination)
+    if(file.exists()){
+      val modifiedTime = file.lastModified()
+      assert(currentTime>modifiedTime)
+    } else {
+      assertThrows[InvalidInputException]{
+        PipelineModel.load(destination)
+      }
+    }
+  }
+
+  test("annotate should return annotated DataFrame with necessary columns"){
+    val annotated = posPipeline.annotate(testArticles, destination)
+    assert(annotated.isInstanceOf[DataFrame])
+    val columns = annotated.columns
+    assert(columns.contains("_id"))
+    assert(columns.contains("long_url"))
+    assert(columns.contains("crawl_time"))
+    assert(columns.contains("text"))
+    assert(columns.contains("document"))
+    assert(columns.contains("sentence"))
+    assert(columns.contains("token"))
+    assert(columns.contains("normalized"))
+    assert(columns.contains("pos"))
+    assert(columns.contains("lemma"))
+  }
 }

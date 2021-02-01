@@ -2,7 +2,7 @@ package evaluation
 
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import utils.json.JsonParser.parsePosTags
+
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -48,11 +48,11 @@ object EvaluationRunner {
       .collect()
       .toList
 
-    val correctPosTags = readTestFile(testPosTags).map(line => parsePosTags(line))
+    //val correctPosTags = readTestFile(testPosTags).map(line => parsePosTags(line))
     val evaluator = new PipelineEvaluator
-    val accuracy = evaluator.getAccuracy(testAnnotations, correctPosTags)
-    println("accuracy: "+accuracy)
-    println(evaluator.compare(testAnnotations, correctPosTags))
+    //val accuracy = evaluator.getAccuracy(testAnnotations, correctPosTags)
+    //println("accuracy: "+accuracy)
+    //println(evaluator.compare(testAnnotations, correctPosTags))
   }
 
   def readTestFile(path: String): List[String] = {

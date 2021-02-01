@@ -1,6 +1,7 @@
 package training.pos
 
 import com.typesafe.config.ConfigFactory
+import daos.DAO
 import daos.db.DbDao
 import model.Strings
 import org.apache.spark.ml.PipelineModel
@@ -9,9 +10,9 @@ import pipeline.pos.PosPipeline
 import training.Trainer
 import utils.Conversion
 
-class PosTrainer(spark: SparkSession, numArticles: Option[Int]) extends Trainer{
+class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extends Trainer{
 
-  val dao = new DbDao(spark)
+  //val dao = new DbDao(spark)
   val articles = dao.getNewsArticles(numArticles)
   val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
     (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))

@@ -2,7 +2,6 @@ package daos.memory
 
 import java.io.File
 import daos.DAO
-import model.AnnotatedArticle
 import org.apache.spark.sql.functions.col
 import org.apache.spark.sql.types.{LongType, TimestampType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -32,8 +31,6 @@ class InMemoryDao(val spark: SparkSession, val sourceFile: String, val destinati
       case None => articles
     }
   }
-
-  override def writeArticle(article: AnnotatedArticle, destination: String): Unit = ???
 
   /**
    * Writes multiple analysed articles to destination

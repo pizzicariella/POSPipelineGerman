@@ -1,19 +1,15 @@
 package training.pos
 
 import java.io.File
-
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import model.{AnnotatedArticle, Strings}
+import model.Strings
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
-import utils.Conversion
 import scala.reflect.io.Directory
 
-//TODO update
-//This tests requires correctly configured database that contains documents with NewsArticle columns.
 class PosTrainerTest extends AnyFunSuite{
 
   val spark: SparkSession = SparkSession
@@ -25,28 +21,59 @@ class PosTrainerTest extends AnyFunSuite{
     .getOrCreate()
 
   val articleFile = ConfigFactory.load().getString(Strings.configTestFile)
-  val path = "src/test/resources/posPipelineModel"
-  val dao = new InMemoryDao(spark, articleFile, "none")
-  val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
-    (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
-  val newsArticles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(20)), replacements)
-
-  val posTrainer = new PosTrainer(spark, Some(20))
+  val path = "src/test/resources/writeModelTest"
+  val destination = "src/test/resources/writeTest"
+  val dao = new InMemoryDao(spark, articleFile, destination)
+  val posTrainer = new PosTrainer(spark, Some(10), dao)
 
   test("startTraining with None returns but does not save model"){
+    val currentTime = System.currentTimeMillis()
     val model = posTrainer.startTraining(None)
     assert(model.isInstanceOf[PipelineModel])
-    assertThrows[InvalidInputException]{
-      PipelineModel.load(path)
+    val file = new File(path)
+    if(file.exists()){
+      val modifiedTime = file.lastModified()
+      assert(currentTime>modifiedTime)
+    } else {
+      assertThrows[InvalidInputException]{
+        PipelineModel.load(path)
+      }
     }
+  }
+
+  test("startTraining with Some(path) returns and saves model"){
+    val file = new File(path)
+    if(file.exists()){
+      new Directory(file).deleteRecursively()
+    }
+    val model = posTrainer.startTraining(Some(path))
+    assert(model.isInstanceOf[PipelineModel])
+    assert(new File(path).exists())
   }
 
   test("results with None annotates based on previously saved model"){
     posTrainer.startTraining(Some(path))
     val result = posTrainer.results(None, path, false)
-    assert(result.isInstanceOf[Seq[AnnotatedArticle]])
-    val directory = new Directory(new File(path))
-    directory.deleteRecursively()
+    assert(result.isInstanceOf[DataFrame])
   }
 
+  test("results without save option does not save articles"){
+    val file = new File(destination)
+    if(file.exists()){
+      new Directory(file).deleteRecursively()
+    }
+    posTrainer.startTraining(Some(path))
+    posTrainer.results(None, path, false)
+    assert(!file.exists())
+  }
+
+  test("results with save option does save articles"){
+    val file = new File(destination)
+    if(file.exists()){
+      new Directory(file).deleteRecursively()
+    }
+    posTrainer.startTraining(Some(path))
+    posTrainer.results(None, path, true)
+    assert(file.exists())
+  }
 }
