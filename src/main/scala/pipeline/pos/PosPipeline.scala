@@ -73,11 +73,21 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
 
 
    override def runPipeline(articles: DataFrame): DataFrame = {
-    pipeline.fit(articles).transform(articles)
+     val pipeline_ = this.pipeline
+     pipeline_.fit(articles).transform(articles)
   }
 
-  override def train(articles: DataFrame): PipelineModel = {
-    pipeline.fit(articles)
+  override def train(articles: DataFrame, write: Option[String] = None ): PipelineModel = {
+    val pipeline_ = this.pipeline
+    val model = pipeline_.fit(articles)
+    write match {
+      case None => model
+      case Some(path) => {
+        //writing the model will yield task size warning, but is necessary for demo page
+        model.write.overwrite().save(path)
+        model
+      }
+    }
   }
 
   override def annotate(articles: DataFrame,

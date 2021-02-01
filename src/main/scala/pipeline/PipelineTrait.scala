@@ -17,7 +17,7 @@ trait PipelineTrait {
    * @param articles must contain column text
    * @return
    */
-  def train(articles: DataFrame): PipelineModel
+  def train(articles: DataFrame, path: Option[String] = None): PipelineModel
 
   /**
    * Annotate articles using previously trained PipelineModel.
