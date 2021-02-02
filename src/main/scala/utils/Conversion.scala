@@ -1,7 +1,7 @@
 package utils
 
 import meta.ExtraInformation
-import model.{AnnotatedArticle, Lemma, PosAnnotation, PosPercentage, Strings}
+import model.{AnnotatedArticle, Lemma, PosAnnotation, PosPercentage}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace}
 
@@ -15,11 +15,11 @@ object Conversion {
 
   def prepareArticlesForSaving(articles: DataFrame, spark: SparkSession): DataFrame = {
     val selected = articles.select(
-      Strings.columnId,
-      Strings.columnLongUrl,
-      Strings.columnCrawlTime,
-      Strings.columnText,
-      Strings.columnPos,
+      "_id",
+      "long_url",
+      "crawl_time",
+      "text",
+      "pos",
       "lemma")
 
     val dropedNested = dropNestedColumns(selected)

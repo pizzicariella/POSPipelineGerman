@@ -3,7 +3,6 @@ package training.pos
 import java.io.File
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import model.Strings
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -14,13 +13,13 @@ class PosTrainerTest extends AnyFunSuite{
 
   val spark: SparkSession = SparkSession
     .builder()
-    .appName(Strings.sparkParamsAppName)
-    .master(Strings.sparkParamsLocal)
-    .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
-    .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
+    .appName("POSPipelineGerman")
+    .master("local[*]")
+    .config("spark.executor.memory", "12g")
+    .config("spark.driver.memory", "12g")
     .getOrCreate()
 
-  val articleFile = ConfigFactory.load().getString(Strings.configTestFile)
+  val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
   val path = "src/test/resources/writeModelTest"
   val destination = "src/test/resources/writeTest"
   val dao = new InMemoryDao(spark, articleFile, destination)

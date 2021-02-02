@@ -3,21 +3,20 @@ package daos
 import com.typesafe.config.ConfigFactory
 import org.scalatest.funsuite.AnyFunSuite
 import daos.memory.InMemoryDao
-import model.Strings
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
 
 class DAOTest extends AnyFunSuite{
 
-  val articleFile = ConfigFactory.load().getString(Strings.configTestFile)
+  val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
 
   val spark: SparkSession = SparkSession
     .builder()
-    .appName(Strings.sparkParamsAppName)
-    .master(Strings.sparkParamsLocal)
-    .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
-    .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
+    .appName("POSPipelineGerman")
+    .master("local[*]")
+    .config("spark.executor.memory", "12g")
+    .config("spark.driver.memory", "12g")
     .getOrCreate()
 
   val destinationFile = "src/test/resources/writeTest"

@@ -6,29 +6,27 @@ import daos.memory.InMemoryDao
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
-import model.Strings
 
 import scala.io.Source
 
 object EvaluationRunner {
 
-  val articlesToEvaluate = ConfigFactory.load().getString(Strings.configEvalFile)
-  val testPosTags = ConfigFactory.load().getString(Strings.configEvalPosTags)
-  val posModel = ConfigFactory.load().getString(Strings.configPosModel)
+  val articlesToEvaluate = ConfigFactory.load().getString("app.file_eval")
+  val testPosTags = ConfigFactory.load().getString("app.pos_tags_eval")
+  val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
   def main(args: Array[String]): Unit = {
     val spark: SparkSession = SparkSession
       .builder()
-      .appName(Strings.sparkParamsAppName)
-      .master(Strings.sparkParamsLocal)
+      .appName("POSPipelineGerman")
+      .master("local[*]")
       .getOrCreate()
 
     import spark.implicits._
 
     val dao = new InMemoryDao(spark, articlesToEvaluate, "none")
 
-    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
-      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+    val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
     val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)
 
     val posPipeline = new PosPipeline(spark, posModel)

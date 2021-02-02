@@ -2,7 +2,6 @@ package utils
 
 import daos.memory.InMemoryDao
 import org.scalatest.funsuite.AnyFunSuite
-import model.Strings
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.pos.PosPipeline
 
@@ -10,10 +9,10 @@ class ConversionTest extends AnyFunSuite{
 
   val spark: SparkSession = SparkSession
     .builder()
-    .appName(Strings.sparkParamsAppName)
-    .master(Strings.sparkParamsLocal)
-    .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
-    .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
+    .appName("POSPipelineGerman")
+    .master("local[*]")
+    .config("spark.executor.memory", "12g")
+    .config("spark.driver.memory", "12g")
     .getOrCreate()
 
   val dao = new InMemoryDao(spark, "src/test/resources/inMemoryArticles", "none")
