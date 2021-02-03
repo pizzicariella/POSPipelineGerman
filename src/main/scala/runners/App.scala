@@ -26,17 +26,17 @@ object App {
     val spark: SparkSession = SparkSession
       .builder()
       .appName("POSPipelineGerman")
-      .master("local[*]")
+      .master("yarn")
       .config("spark.mongodb.input.uri", "mongodb://"+userName+":"+pw+"@"+serverAddress+":"+port+"/"+db+"."+collectionName)
       .config("spark.mongodb.output.uri", "mongodb://"+targetUserName+":"+targetPw+"@"+targetServerAddress+":"
         +targetPort+"/"+targetDb+"."+targetCollectionName)
-      .config("spark.executor.memory", "12g")
-      .config("spark.driver.memory", "12g")
+      //.config("spark.executor.memory", "12g")
+      //.config("spark.driver.memory", "12g")
       .getOrCreate()
 
     val dao = new DbDao(spark)
 
-    val trainer = new PosTrainer(spark, Some(200), dao)
+    val trainer = new PosTrainer(spark, None, dao)
     trainer.startTraining(Some(path))
     trainer.results(None, path, true)
   }
