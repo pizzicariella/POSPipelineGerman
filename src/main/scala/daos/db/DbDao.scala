@@ -2,7 +2,6 @@ package daos.db
 
 import com.mongodb.spark.MongoSpark
 import daos.DAO
-import model.AnnotatedArticle
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class DbDao(val spark: SparkSession) extends DAO{
@@ -24,8 +23,6 @@ class DbDao(val spark: SparkSession) extends DAO{
       case None => articles
     }
   }
-
-  override def writeArticle(article: AnnotatedArticle, collectionName: String): Unit = ???
 
   /**
    * Writes multiple analysed articles to destination

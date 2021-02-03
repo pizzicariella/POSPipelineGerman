@@ -2,7 +2,6 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.memory.InMemoryDao
-import model.Strings
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -12,20 +11,20 @@ object InMemoryApp {
 
     val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
     val targetFile = ConfigFactory.load().getString("app.target_inmemoryfile")
-    val posModel = ConfigFactory.load().getString(Strings.configPosModel)
+    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
     val spark: SparkSession = SparkSession
       .builder()
-      .appName(Strings.sparkParamsAppName)
-      .master(Strings.sparkParamsLocal)
-      .config(Strings.sparkConigExecuterMemory, Strings.sparkParamsMemory)
-      .config(Strings.sparkConfigDriverMemory, Strings.sparkParamsMemory)
+      .appName("POSPipelineGerman")
+      .master("local[*]")
+      .config("spark.executor.memory", "12g")
+      .config("spark.driver.memory", "12g")
       .getOrCreate()
 
     val dao = new InMemoryDao(spark, articleFile, targetFile)
     val articles = dao.getNewsArticles(Some(200))
-    val replacements = Seq((Strings.replacePatternSpecialWhitespaces, Strings.replacementWhitespaces),
-      (Strings.replacePatternMissingWhitespaces, Strings.replacementMissingWhitespaces))
+    val replacements = Seq((" ", " "),
+      ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
 
     val posPipeline = new PosPipeline(spark, posModel)

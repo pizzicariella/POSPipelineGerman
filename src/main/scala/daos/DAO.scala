@@ -1,6 +1,5 @@
 package daos
 
-import model.AnnotatedArticle
 import org.apache.spark.sql.DataFrame
 
 trait DAO {
@@ -12,12 +11,6 @@ trait DAO {
    */
   def getNewsArticles(limit: Option[Int]): DataFrame
 
-  /**
-   * Writes single analysed article to destination.
-   * @param article
-   */
-  //TODO remove?
-  def writeArticle(article: AnnotatedArticle, destination: String)
 
   /**
    * Writes multiple analysed articles to destination

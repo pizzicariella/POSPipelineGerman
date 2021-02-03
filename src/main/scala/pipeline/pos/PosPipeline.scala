@@ -6,7 +6,6 @@ import com.johnsnowlabs.nlp.{DocumentAssembler, Finisher}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.PipelineTrait
-import model.Strings
 
 class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTrait{
 
@@ -16,25 +15,26 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     "\\u208E\\u2090-\\u209C\\u0345\\u0656\\u17D2\\u1D62-\\u1D6A\\u2A27\\u2C7C]"
 
   val documentAssembler = new DocumentAssembler()
-    .setInputCol(Strings.columnText)
-    .setOutputCol(Strings.columnDocument)
+    .setInputCol("text")
+    .setOutputCol("document")
 
   val sentenceDetector = new SentenceDetector()
-    .setInputCols(Strings.columnDocument)
-    .setOutputCol(Strings.columnSentence)
+    .setInputCols("document")
+    .setOutputCol("sentence")
 
+  //TODO check if patterns are arbitrary because of normalizer
   val tokenizer = new Tokenizer()
-    .setInputCols(Array(Strings.columnSentence))
-    .setOutputCol(Strings.columnToken)
-    .setSuffixPattern(Strings.tokenizerSuffixPattern)
-    .setPrefixPattern(Strings.tokenizerPrefixPattern)
-    .addException(Strings.exceptionKitt)
+    .setInputCols(Array("sentence"))
+    .setOutputCol("token")
+    .setSuffixPattern("([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)\\z")
+    .setPrefixPattern("\\A([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)")
+    .addException("K.I.T.T.")
 
   //TODO nochmal evaluieren, ob pos tags besser mit oder ohne normalizer gefunden werden (zb Relativpronomen).
   //bei großen Differenzen, die Punct tags hinterher rausfiltern
   val normalizer = new Normalizer()
-    .setInputCols(Array(Strings.columnToken))
-    .setOutputCol(Strings.columnNormalized)
+    .setInputCols(Array("token"))
+    .setOutputCol("normalized")
     //Clean everything but higher and lower case letters, including ä,ö,ü,ß, - numbers and super/subscript.
     // Dont't remove , or . if a number follows. Don't remove - if capital letter follows
     .setCleanupPatterns(Array(cleanUpPattern))
@@ -51,8 +51,8 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
 
   val posTagger = PerceptronModel
     .load(posModel)
-    .setInputCols(Array(Strings.columnSentence, Strings.columnNormalized))
-    .setOutputCol(Strings.columnPos)
+    .setInputCols(Array("sentence", "normalized"))
+    .setOutputCol("pos")
 
   /*val finisher = new Finisher()
     .setInputCols(Array("token", "normalized", Strings.columnPos, "lemma"))
