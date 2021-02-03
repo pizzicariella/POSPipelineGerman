@@ -31,7 +31,7 @@ class DAOTest extends AnyFunSuite{
     assert(result2.count() === 100)
   }
 
-  test("getNewsArticles return DataFrame with correct columns only"){
+  test("getNewsArticles returns DataFrame with correct columns only"){
     val res = dao.getNewsArticles(Some(20))
     assert(res.columns.contains("_id"))
     assert(res.columns.contains("long_url"))

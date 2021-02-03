@@ -55,7 +55,7 @@ class PosPipelineTest extends AnyFunSuite{
       new Directory(file).deleteRecursively()
     }
     posPipeline.train(testArticles, Option(destination))
-    assert(new File(destination).exists())
+    assert(file.exists())
   }
 
   test("train without write Option should not write model to given destination"){
