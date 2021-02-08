@@ -1,9 +1,8 @@
 package utils
 
-import meta.ExtraInformation
-import model.{AnnotatedArticle, Lemma, PosAnnotation, PosPercentage}
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace}
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace, udf}
+
 
 object Conversion {
 
@@ -23,7 +22,7 @@ object Conversion {
       "lemma")
 
     val dropedNested = dropNestedColumns(selected)
-    createDfWithObjects(dropedNested, spark)
+    createPosPercentageColumn(dropedNested)
   }
 
   private def removeEmptyTextStrings(df: DataFrame): DataFrame = df.filter("text != ''")
@@ -49,41 +48,25 @@ object Conversion {
       .drop("title", "intro")
   }
 
-  private def createDfWithObjects(df: DataFrame, spark: SparkSession): DataFrame = {
-    import spark.implicits._
-    df
-      .rdd
-      .map(row => {
-        val posList = row.getSeq[Row](4)
-          .map(innerRow => PosAnnotation(innerRow.getInt(0),
-            innerRow.getInt(1),
-            innerRow.getString(2))
-          ).toList
+  private def createPosPercentageColumn(df: DataFrame): DataFrame = {
 
-        val lemmas = row.getSeq[Row](5)
-          .map(innerRow => Lemma(innerRow.getInt(0),
-            innerRow.getInt(1),
-            innerRow.getString(2))
-          ).toList
+    val getPosPercentage = (annos: Seq[String]) => {
+      annos.foldLeft(Map.empty[String, Double])((map, anno) => map.updated(anno, map.getOrElse(anno, 0.0)+1.0))
+        .mapValues(_/annos.size)
+        .toList
+    }
 
-        val percentages = ExtraInformation.getPosPercentage(posList)
-          .map(percentage => PosPercentage(percentage._1, percentage._2))
+    val getPosPercentageUDF = udf(getPosPercentage)
 
-        AnnotatedArticle(row.getStruct(0).getString(0),
-          row.getString(1),
-          row.getTimestamp(2),
-          row.getString(3),
-          posList,
-          lemmas,
-          percentages
-        )
-      }
-      ).toDF()
+    df.withColumn("posPercentage", expr("transform(pos, x -> x.tag)"))
+      .withColumn("posPercentage", getPosPercentageUDF(col("posPercentage")))
+      .withColumn("posPercentage", expr("transform(posPercentage, x -> struct(x._1 as tag, x._2 as percentage))"))
+
   }
 
   private def dropNestedColumns(df: DataFrame): DataFrame = {
     df.withColumn("pos",
-        expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as result))"))
+        expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as tag))"))
       .withColumn("lemma",
         expr("transform(lemma, x -> struct(x.begin as beginToken, x.end as endToken, x.result as result))"))
   }

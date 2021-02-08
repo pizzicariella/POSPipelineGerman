@@ -48,8 +48,10 @@ object OriginalApp {
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    annotations.select("text","pos", "lemma").show(true)
-    annotations.printSchema()
+    Conversion.prepareArticlesForSaving(annotations, spark)
+
+    //annotations.select("text","pos", "lemma").show(true)
+    //annotations.printSchema()
 
 
     //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)

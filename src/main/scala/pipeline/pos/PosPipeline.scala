@@ -95,4 +95,11 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     val model = PipelineModel.load(path)
     model.transform(articles)
   }
+
+  def runWithSaveModel(articles: DataFrame, path: String): DataFrame = {
+    val pipeline_ = this.pipeline
+    val model = pipeline_.fit(articles)
+    model.write.overwrite().save(path)
+    model.transform(articles)
+  }
 }

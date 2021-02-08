@@ -61,14 +61,18 @@ class ConversionTest extends AnyFunSuite{
     val result = Conversion.prepareArticlesForSaving(annotated, spark)
     val columns = result.columns
     assert(columns.contains("_id"))
-    assert(columns.contains("longUrl"))
-    assert(columns.contains("crawlTime"))
+    assert(columns.contains("long_url"))
+    assert(columns.contains("crawl_time"))
     assert(columns.contains("text"))
-    assert(columns.contains("annotationsPos"))
-    assert(columns.contains("tagPercentage"))
-    assert(columns.contains("lemmas"))
+    assert(columns.contains("pos"))
+    assert(columns.contains("posPercentage"))
+    assert(columns.contains("lemma"))
     assert(!columns.contains("sentence"))
     assert(!columns.contains("document"))
     assert(!columns.contains("normalized"))
+  }
+
+  test("prepareArticlesForSaving should calculate posPercentage correctly"){
+    //TODO
   }
 }

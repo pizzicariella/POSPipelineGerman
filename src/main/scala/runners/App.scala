@@ -3,7 +3,9 @@ package runners
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
 import org.apache.spark.sql.SparkSession
+import pipeline.pos.PosPipeline
 import training.pos.PosTrainer
+import utils.Conversion
 
 object App {
   def main(args: Array[String]): Unit = {
@@ -26,18 +28,28 @@ object App {
     val spark: SparkSession = SparkSession
       .builder()
       .appName("POSPipelineGerman")
-      .master("yarn")
+      .master("local[*]")
       .config("spark.mongodb.input.uri", "mongodb://"+userName+":"+pw+"@"+serverAddress+":"+port+"/"+db+"."+collectionName)
       .config("spark.mongodb.output.uri", "mongodb://"+targetUserName+":"+targetPw+"@"+targetServerAddress+":"
         +targetPort+"/"+targetDb+"."+targetCollectionName)
-      //.config("spark.executor.memory", "12g")
-      //.config("spark.driver.memory", "12g")
+      .config("spark.executor.memory", "15g")
+      .config("spark.driver.memory", "15g")
+      .config("spark.network.timeout", "600s")
       .getOrCreate()
 
     val dao = new DbDao(spark)
+    val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
+    val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(200)), replacements)
+    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
+    val pipe = new PosPipeline(spark, posModel)
+    val annotatedArticles = pipe.runWithSaveModel(articlesWithText, path)
+    val finalDf = Conversion.prepareArticlesForSaving(annotatedArticles, spark)
+    dao.writeArticles(finalDf)
 
-    val trainer = new PosTrainer(spark, None, dao)
+
+
+    /*val trainer = new PosTrainer(spark, None, dao)
     trainer.startTraining(Some(path))
-    trainer.results(None, path, true)
+    trainer.results(None, path, true)*/
   }
 }
