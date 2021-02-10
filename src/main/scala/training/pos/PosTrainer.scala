@@ -37,10 +37,10 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extend
       case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles, replacements_), path)
     }
 
-    val finalDf = Conversion.prepareArticlesForSaving(annotatedDf, spark)
+    val finalDf = Conversion.prepareArticlesForSaving(annotatedDf)
 
     if(save){
-      dao_.writeArticles(finalDf)
+      dao_.writeAnnotatedArticles(finalDf)
     }
 
     finalDf

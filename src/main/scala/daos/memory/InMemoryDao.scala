@@ -10,7 +10,7 @@ import scala.reflect.io.Directory
 
 class InMemoryDao(val spark: SparkSession, val sourceFile: String, val destinationFile: String) extends DAO{
 
-  override def getNewsArticles(limit: Option[Int]): DataFrame = {
+  override def getNewsArticles(limit: Option[Int] = None): DataFrame = {
 
     val articles = spark.read.json(sourceFile)
       .drop("short_url",
@@ -39,7 +39,7 @@ class InMemoryDao(val spark: SparkSession, val sourceFile: String, val destinati
    * @param destination
    */
 
-  override def writeArticles(articles: DataFrame): Unit = {
+  override def writeAnnotatedArticles(articles: DataFrame): Unit = {
       new Directory(new File(destinationFile)).deleteRecursively()
       articles.write.json(destinationFile)
   }

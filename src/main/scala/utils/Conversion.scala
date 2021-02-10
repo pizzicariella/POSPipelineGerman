@@ -1,6 +1,6 @@
 package utils
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace, udf}
 
 
@@ -12,7 +12,7 @@ object Conversion {
     removeEmptyTextStrings(replaced)
   }
 
-  def prepareArticlesForSaving(articles: DataFrame, spark: SparkSession): DataFrame = {
+  def prepareArticlesForSaving(articles: DataFrame): DataFrame = {
     val selected = articles.select(
       "_id",
       "long_url",

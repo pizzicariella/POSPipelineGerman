@@ -48,7 +48,7 @@ object OriginalApp {
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    Conversion.prepareArticlesForSaving(annotations, spark)
+    Conversion.prepareArticlesForSaving(annotations)
 
     //annotations.select("text","pos", "lemma").show(true)
     //annotations.printSchema()

@@ -50,7 +50,7 @@ class DAOTest extends AnyFunSuite{
 
   test("writeArticles writes DataFrame to File"){
     val dfToWrite = dao.getNewsArticles(Some(5))
-    dao.writeArticles(dfToWrite)
+    dao.writeAnnotatedArticles(dfToWrite)
     assert(new File(destinationFile).exists())
   }
 }

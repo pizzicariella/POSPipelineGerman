@@ -58,7 +58,7 @@ class ConversionTest extends AnyFunSuite{
   test("prepareArticlesForSaving should return DataFrame with relevant AnnotatedArticleColumns only"){
     val posPipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
     val annotated = posPipeline.runPipeline(articlesBeforeConversion)
-    val result = Conversion.prepareArticlesForSaving(annotated, spark)
+    val result = Conversion.prepareArticlesForSaving(annotated)
     val columns = result.columns
     assert(columns.contains("_id"))
     assert(columns.contains("long_url"))

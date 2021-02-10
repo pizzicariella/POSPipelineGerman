@@ -6,7 +6,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class DbDao(val spark: SparkSession) extends DAO{
 
-  override def getNewsArticles(limit: Option[Int]): DataFrame = {
+  override def getNewsArticles(limit: Option[Int] = None): DataFrame = {
 
     val articles = MongoSpark.load(spark).toDF()
       .drop("short_url",
@@ -29,7 +29,7 @@ class DbDao(val spark: SparkSession) extends DAO{
    *
    * @param articles
    */
-  override def writeArticles(articles: DataFrame): Unit = {
+  override def writeAnnotatedArticles(articles: DataFrame): Unit = {
     MongoSpark.save(articles)
   }
 }

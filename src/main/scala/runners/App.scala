@@ -39,12 +39,12 @@ object App {
 
     val dao = new DbDao(spark)
     val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-    val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(Some(200)), replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)
     val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
     val pipe = new PosPipeline(spark, posModel)
-    val annotatedArticles = pipe.runWithSaveModel(articlesWithText, path)
-    val finalDf = Conversion.prepareArticlesForSaving(annotatedArticles, spark)
-    dao.writeArticles(finalDf)
+    val annotatedArticles = pipe.runPipeline(articlesWithText, Some(path))
+    val finalDf = Conversion.prepareArticlesForSaving(annotatedArticles)
+    dao.writeAnnotatedArticles(finalDf)
 
 
 
