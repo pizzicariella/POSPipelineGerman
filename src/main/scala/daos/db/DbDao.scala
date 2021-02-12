@@ -24,11 +24,6 @@ class DbDao(val spark: SparkSession) extends DAO{
     }
   }
 
-  /**
-   * Writes multiple analysed articles to destination
-   *
-   * @param articles
-   */
   override def writeAnnotatedArticles(articles: DataFrame): Unit = {
     MongoSpark.save(articles)
   }

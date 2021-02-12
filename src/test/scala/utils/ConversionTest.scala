@@ -1,6 +1,6 @@
 package utils
 
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.scalatest.funsuite.AnyFunSuite
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.pos.PosPipeline
@@ -15,7 +15,7 @@ class ConversionTest extends AnyFunSuite{
     .config("spark.driver.memory", "12g")
     .getOrCreate()
 
-  val dao = new InMemoryDao(spark, "src/test/resources/inMemoryArticles", "none")
+  val dao = new FileDao(spark, "src/test/resources/inMemoryArticles", "none")
   val articlesBeforeConversion = dao.getNewsArticles(Some(10))
 
   val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
@@ -47,7 +47,7 @@ class ConversionTest extends AnyFunSuite{
   }
 
   test("prepareArticlesForPipeline should remove empty text strings"){
-    val daoForBrokenFile = new InMemoryDao(spark, "src/test/resources/brokenTestFile.json", "none")
+    val daoForBrokenFile = new FileDao(spark, "src/test/resources/brokenTestFile.json", "none")
     val brokenArticle = daoForBrokenFile.getNewsArticles(Some(1))
     val articlesWithEmptyText = articlesBeforeConversion.union(brokenArticle)
     val numArticles = articlesWithEmptyText.count()

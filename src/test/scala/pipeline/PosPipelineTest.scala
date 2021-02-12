@@ -1,6 +1,6 @@
 package pipeline
 
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -20,7 +20,7 @@ class PosPipelineTest extends AnyFunSuite{
     .config("spark.driver.memory", "12g")
     .getOrCreate()
 
-  val dao = new InMemoryDao(spark,
+  val dao = new FileDao(spark,
     "src/test/resources/inMemoryArticles",
     "src/test/resources/writeTest")
 

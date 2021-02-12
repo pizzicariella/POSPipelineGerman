@@ -58,9 +58,9 @@ object Conversion {
 
     val getPosPercentageUDF = udf(getPosPercentage)
 
-    df.withColumn("posPercentage", expr("transform(pos, x -> x.tag)"))
-      .withColumn("posPercentage", getPosPercentageUDF(col("posPercentage")))
-      .withColumn("posPercentage", expr("transform(posPercentage, x -> struct(x._1 as tag, x._2 as percentage))"))
+    df.withColumn("pos_percentage", expr("transform(pos, x -> x.tag)"))
+      .withColumn("pos_percentage", getPosPercentageUDF(col("posPercentage")))
+      .withColumn("pos_percentage", expr("transform(posPercentage, x -> struct(x._1 as tag, x._2 as percentage))"))
 
   }
 

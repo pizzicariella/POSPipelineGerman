@@ -8,7 +8,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import scala.reflect.io.Directory
 
 
-class InMemoryDao(val spark: SparkSession, val sourceFile: String, val destinationFile: String) extends DAO{
+class FileDao(val spark: SparkSession, val sourceFile: String, val destinationFile: String) extends DAO{
 
   override def getNewsArticles(limit: Option[Int] = None): DataFrame = {
 

@@ -1,7 +1,7 @@
 package evaluation
 
 import com.typesafe.config.ConfigFactory
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
@@ -24,7 +24,7 @@ object EvaluationRunner {
 
     import spark.implicits._
 
-    val dao = new InMemoryDao(spark, articlesToEvaluate, "none")
+    val dao = new FileDao(spark, articlesToEvaluate, "none")
 
     val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
     val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)

@@ -2,7 +2,7 @@ package daos
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.funsuite.AnyFunSuite
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
@@ -21,7 +21,7 @@ class DAOTest extends AnyFunSuite{
 
   val destinationFile = "src/test/resources/writeTest"
 
-  val dao = new InMemoryDao(spark, articleFile, destinationFile)
+  val dao = new FileDao(spark, articleFile, destinationFile)
 
   test("getNewsArticles returns DataFrame with correct size"){
     val result1 = dao.getNewsArticles(Some(20))
