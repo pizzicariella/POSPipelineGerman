@@ -47,6 +47,7 @@ object OriginalApp {
     val posPipeline = new PosPipeline(spark, posModel)
 
     val annotations = posPipeline.runPipeline(articlesWithText)
+    annotations.select("document").show(false)
 
     Conversion.prepareArticlesForSaving(annotations)
 

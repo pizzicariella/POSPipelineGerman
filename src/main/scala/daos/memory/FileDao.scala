@@ -32,13 +32,6 @@ class FileDao(val spark: SparkSession, val sourceFile: String, val destinationFi
     }
   }
 
-  /**
-   * Writes multiple analysed articles to destination
-   *
-   * @param articles
-   * @param destination
-   */
-
   override def writeAnnotatedArticles(articles: DataFrame): Unit = {
       new Directory(new File(destinationFile)).deleteRecursively()
       articles.write.json(destinationFile)
