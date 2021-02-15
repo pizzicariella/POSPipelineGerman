@@ -6,10 +6,10 @@ import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace, u
 
 object Conversion {
 
-  def prepareArticlesForPipeline(articles: DataFrame, replacements: Seq[(String, String)]): DataFrame = {
+  def prepareArticlesForPipeline(articles: DataFrame): DataFrame = {
     val dfWithTextColumn = createNewTextColumn(articles)
-    val replaced = replace(dfWithTextColumn, replacements)
-    removeEmptyTextStrings(replaced)
+    //val replaced = replace(dfWithTextColumn, replacements)
+    removeEmptyTextStrings(dfWithTextColumn)
   }
 
   def prepareArticlesForSaving(articles: DataFrame): DataFrame = {

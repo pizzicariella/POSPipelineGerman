@@ -27,7 +27,7 @@ object EvaluationRunner {
     val dao = new FileDao(spark, articlesToEvaluate, "none")
 
     val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)
+    val articles = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None))
 
     val posPipeline = new PosPipeline(spark, posModel)
 

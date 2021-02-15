@@ -1,0 +1,1 @@
+{"class":"com.johnsnowlabs.nlp.Finisher","timestamp":1613394101543,"sparkVersion":"2.4.7","uid":"finisher_2c0dc05a19f8","paramMap":{"inputCols":["token","normalized","pos","lemma"],"includeMetadata":false,"cleanAnnotations":false},"defaultParamMap":{"includeMetadata":false,"parseEmbeddingsVectors":false,"cleanAnnotations":true,"outputAsArray":true}}

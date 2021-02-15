@@ -45,17 +45,20 @@ object OriginalApp {
     val replacements = Seq(//(" ", " "),
      ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
 
-    //val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark, posModel)
+    val annotations = posPipeline.runPipeline(articlesWithText)
+    //val annotations = posPipeline.runPipeline(articles)
+    //annotations.select("lemma").show(false)
 
-    //val annotations = posPipeline.runPipeline(articlesWithText)
-    val annotations = posPipeline.runPipeline(articles)
-    annotations.select("lemma").show(false)
+    annotations.printSchema()
 
 
 
-    //Conversion.prepareArticlesForSaving(annotations)
+    val prepared = Conversion.prepareArticlesForSaving(annotations)
+
+    prepared.printSchema()
 
     //annotations.select("text","pos", "lemma").show(true)
     //annotations.printSchema()

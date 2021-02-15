@@ -39,7 +39,7 @@ object App {
 
     val dao = new DbDao(spark)
     val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-    val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None), replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None))
     val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
     val pipe = new PosPipeline(spark, posModel)
     val annotatedArticles = pipe.runPipeline(articlesWithText, Some(path))

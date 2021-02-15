@@ -11,7 +11,7 @@ import utils.Conversion
 class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extends Trainer{
 
   val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-  val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(numArticles), replacements)
+  val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(numArticles))
 
   val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
@@ -34,7 +34,7 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extend
 
     val annotatedDf = articles match {
       case None => posPipeline_.annotate(articlesWithText, path)
-      case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles, replacements_), path)
+      case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles), path)
     }
 
     val finalDf = Conversion.prepareArticlesForSaving(annotatedDf)

@@ -73,8 +73,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     ))
 
   override def train(articles: DataFrame, write: Option[String] = None ): PipelineModel = {
-    val pipeline_ = this.pipeline
-    val model = pipeline_.fit(articles)
+    val model = pipeline.fit(articles)
     write match {
       case None => model
       case Some(path) => {
@@ -92,8 +91,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
   }
 
   def runPipeline(articles: DataFrame, path: Option[String] = None): DataFrame = {
-    val pipeline_ = this.pipeline
-    val model = pipeline_.fit(articles)
+    val model = pipeline.fit(articles)
     path match {
       case Some(p) => {
         model.write.overwrite().save(p)

@@ -21,7 +21,7 @@ class ConversionTest extends AnyFunSuite{
   val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
 
   test("prepareArticlesForPipeline should create new text column and drop title and intro"){
-    val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion, replacements)
+    val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion)
     assert(result.isInstanceOf[DataFrame])
     val columns = result.columns
     assert(columns.contains("text"))
@@ -35,23 +35,12 @@ class ConversionTest extends AnyFunSuite{
     assert(text.contains(" $§$ "))
   }
 
-  test("prepareArticlesForPipeline should replace according to given replacements"){
-    val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion, replacements)
-    val testTexts = result.head(3)
-    assert(!testTexts(0).getString(4).contains(" "))
-    assert(!testTexts(1).getString(4).contains(" "))
-    assert(!testTexts(2).getString(4).contains(" "))
-    assert(!testTexts(0).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
-    assert(!testTexts(1).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
-    assert(!testTexts(2).getString(4).matches("(?<=[^A-Z\\d])\\b\\.\\b"))
-  }
-
   test("prepareArticlesForPipeline should remove empty text strings"){
     val daoForBrokenFile = new FileDao(spark, "src/test/resources/brokenTestFile.json", "none")
     val brokenArticle = daoForBrokenFile.getNewsArticles(Some(1))
     val articlesWithEmptyText = articlesBeforeConversion.union(brokenArticle)
     val numArticles = articlesWithEmptyText.count()
-    val result = Conversion.prepareArticlesForPipeline(articlesWithEmptyText, replacements)
+    val result = Conversion.prepareArticlesForPipeline(articlesWithEmptyText)
     assert(result.count() === numArticles-1)
   }
 
@@ -65,7 +54,7 @@ class ConversionTest extends AnyFunSuite{
     assert(columns.contains("crawl_time"))
     assert(columns.contains("text"))
     assert(columns.contains("pos"))
-    assert(columns.contains("posPercentage"))
+    assert(columns.contains("pos_percentage"))
     assert(columns.contains("lemma"))
     assert(!columns.contains("sentence"))
     assert(!columns.contains("document"))

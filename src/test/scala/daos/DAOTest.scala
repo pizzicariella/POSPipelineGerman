@@ -4,7 +4,6 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.funsuite.AnyFunSuite
 import daos.memory.FileDao
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 import java.io.File
 
 class DAOTest extends AnyFunSuite{
