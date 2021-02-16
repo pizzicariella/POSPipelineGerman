@@ -9,6 +9,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 import scala.reflect.io.Directory
 
+//TODO remove if no longer needed
 class PosTrainerTest extends AnyFunSuite{
 
   val spark: SparkSession = SparkSession

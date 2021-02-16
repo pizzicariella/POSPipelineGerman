@@ -1,6 +1,5 @@
 package pipeline
 
-import daos.memory.FileDao
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
@@ -20,16 +19,18 @@ class PosPipelineTest extends AnyFunSuite{
     .config("spark.driver.memory", "12g")
     .getOrCreate()
 
-  val dao = new FileDao(spark,
-    "src/test/resources/inMemoryArticles",
-    "src/test/resources/writeTest")
+  import spark.implicits._
 
-  val testArticles = dao.getNewsArticles(Some(10))
+  val articles = Seq(
+    ("testId1", 1575834314719L, "test intro 1", "test title 1", "test text 1", "www.test/long.de"),
+    ("testId2", 1575834315000L, "test intro 2", "test title 2", "test text 2", "www.test/long.de"),
+    ("testId3", 1575834315067L, "test intro 3", "test title 3", "test text 3", "www.test/long.de")
+  ).toDF("_id",  "crawl_time", "intro", "title", "text", "long_url")
   val posPipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
   val destination = "src/test/resources/writeModelTest"
 
   test("runPipeline should return DataFrame with necessary columns"){
-    val annotated = posPipeline.runPipeline(testArticles)
+    val annotated = posPipeline.runPipeline(articles)
     assert(annotated.isInstanceOf[DataFrame])
     val columns = annotated.columns
     assert(columns.contains("_id"))
@@ -45,7 +46,7 @@ class PosPipelineTest extends AnyFunSuite{
   }
 
   test("train should return PipelineModel"){
-    val model = posPipeline.train(testArticles)
+    val model = posPipeline.train(articles)
     assert(model.isInstanceOf[PipelineModel])
   }
 
@@ -54,13 +55,13 @@ class PosPipelineTest extends AnyFunSuite{
     if(file.exists()){
       new Directory(file).deleteRecursively()
     }
-    posPipeline.train(testArticles, Option(destination))
+    posPipeline.train(articles, Option(destination))
     assert(file.exists())
   }
 
   test("train without write Option should not write model to given destination"){
     val currentTime = System.currentTimeMillis()
-    posPipeline.train(testArticles, None)
+    posPipeline.train(articles)
     val file = new File(destination)
     if(file.exists()){
       val modifiedTime = file.lastModified()
@@ -73,7 +74,7 @@ class PosPipelineTest extends AnyFunSuite{
   }
 
   test("annotate should return annotated DataFrame with necessary columns"){
-    val annotated = posPipeline.annotate(testArticles, destination)
+    val annotated = posPipeline.annotate(articles, destination)
     assert(annotated.isInstanceOf[DataFrame])
     val columns = annotated.columns
     assert(columns.contains("_id"))

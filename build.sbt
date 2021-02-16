@@ -10,7 +10,6 @@ libraryDependencies ++=Seq(
   "com.johnsnowlabs.nlp" %% "spark-nlp-gpu" % "2.6.2",
   "org.apache.spark" %% "spark-mllib" % "2.4.7",
   "org.apache.spark" %% "spark-sql" % "2.4.7",
-  //"org.apache.spark" %% "spark-sql" % "3.0.0",
 
   "org.mongodb.spark" %% "mongo-spark-connector" % "2.4.2",
 
