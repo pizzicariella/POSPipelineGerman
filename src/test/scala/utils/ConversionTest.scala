@@ -160,8 +160,6 @@ class ConversionTest extends AnyFunSuite{
   }
 
   test("prepareArticlesForSaving should calculate posPercentage correctly"){
-    result.printSchema()
-    result.show()
     val percentages = result.select("pos_percentage").head().getSeq[Row](0)
       .map(pp => (pp.getString(0), pp.getDouble(1))).toMap
     val pron = percentages.getOrElse("PRON", "empty")
