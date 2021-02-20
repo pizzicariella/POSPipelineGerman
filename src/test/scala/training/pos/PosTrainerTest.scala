@@ -1,14 +1,16 @@
 package training.pos
 
-import java.io.File
 import com.typesafe.config.ConfigFactory
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.apache.hadoop.mapred.InvalidInputException
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
+
+import java.io.File
 import scala.reflect.io.Directory
 
+//TODO remove if no longer needed
 class PosTrainerTest extends AnyFunSuite{
 
   val spark: SparkSession = SparkSession
@@ -22,7 +24,7 @@ class PosTrainerTest extends AnyFunSuite{
   val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
   val path = "src/test/resources/writeModelTest"
   val destination = "src/test/resources/writeTest"
-  val dao = new InMemoryDao(spark, articleFile, destination)
+  val dao = new FileDao(spark, articleFile, destination)
   val posTrainer = new PosTrainer(spark, Some(10), dao)
 
   test("startTraining with None returns but does not save model"){

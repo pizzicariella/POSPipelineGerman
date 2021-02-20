@@ -10,9 +10,8 @@ import utils.Conversion
 
 class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extends Trainer{
 
-  val articles = dao.getNewsArticles(numArticles)
   val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-  val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
+  val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(numArticles))
 
   val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
@@ -21,9 +20,8 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extend
   override def startTraining(path: Option[String] = None): PipelineModel = {
 
     val posPipeline_ = posPipeline
-    val articlesWithText_ = articlesWithText
 
-    posPipeline_.train(articlesWithText_, path)
+    posPipeline_.train(articlesWithText, path)
 
   }
 
@@ -31,19 +29,18 @@ class PosTrainer(spark: SparkSession, numArticles: Option[Int], dao: DAO) extend
   override def results(articles: Option[DataFrame], path: String, save: Boolean): DataFrame = {
 
     val posPipeline_ = posPipeline
-    val articlesWithText_ = articlesWithText
     val replacements_ = replacements
     val dao_ = dao
 
     val annotatedDf = articles match {
-      case None => posPipeline_.annotate(articlesWithText_, path)
-      case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles, replacements_), path)
+      case None => posPipeline_.annotate(articlesWithText, path)
+      case Some(articles) => posPipeline_.annotate(Conversion.prepareArticlesForPipeline(articles), path)
     }
 
-    val finalDf = Conversion.prepareArticlesForSaving(annotatedDf, spark)
+    val finalDf = Conversion.prepareArticlesForSaving(annotatedDf)
 
     if(save){
-      dao_.writeArticles(finalDf)
+      dao_.writeAnnotatedArticles(finalDf)
     }
 
     finalDf

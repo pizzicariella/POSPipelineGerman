@@ -1,7 +1,7 @@
 package runners
 
 import com.typesafe.config.ConfigFactory
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -21,18 +21,18 @@ object InMemoryApp {
       .config("spark.driver.memory", "12g")
       .getOrCreate()
 
-    val dao = new InMemoryDao(spark, articleFile, targetFile)
+    val dao = new FileDao(spark, articleFile, targetFile)
     val articles = dao.getNewsArticles(Some(200))
     val replacements = Seq((" ", " "),
       ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-    val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark, posModel)
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)
+    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations)
 
-    dao.writeArticles(annotatedArticles)
+    dao.writeAnnotatedArticles(annotatedArticles)
   }
 }

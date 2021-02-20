@@ -2,6 +2,7 @@ package runners
 
 import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
+import daos.memory.FileDao
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
 import utils.Conversion
@@ -37,19 +38,30 @@ object OriginalApp {
       .getOrCreate()
 
     //val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
-    val dao = new DbDao(spark)
+    //val dao = new DbDao(spark)
+    val dao = new FileDao(spark, "src/test/resources/inMemoryArticles", "none")
     val articles = dao.getNewsArticles(Some(200))
 
-    val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
+    val replacements = Seq(//(" ", " "),
+     ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
 
-    val articlesWithText = Conversion.prepareArticlesForPipeline(articles, replacements)
+    val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark, posModel)
-
     val annotations = posPipeline.runPipeline(articlesWithText)
+    //val annotations = posPipeline.runPipeline(articles)
+    //annotations.select("lemma").show(false)
 
-    annotations.select("text","pos", "lemma").show(true)
     annotations.printSchema()
+
+
+
+    val prepared = Conversion.prepareArticlesForSaving(annotations)
+
+    prepared.printSchema()
+
+    //annotations.select("text","pos", "lemma").show(true)
+    //annotations.printSchema()
 
 
     //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations, spark)

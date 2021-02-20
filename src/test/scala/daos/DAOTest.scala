@@ -2,10 +2,11 @@ package daos
 
 import com.typesafe.config.ConfigFactory
 import org.scalatest.funsuite.AnyFunSuite
-import daos.memory.InMemoryDao
+import daos.memory.FileDao
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import java.io.File
+import scala.reflect.io.Directory
 
 class DAOTest extends AnyFunSuite{
 
@@ -21,7 +22,7 @@ class DAOTest extends AnyFunSuite{
 
   val destinationFile = "src/test/resources/writeTest"
 
-  val dao = new InMemoryDao(spark, articleFile, destinationFile)
+  val dao = new FileDao(spark, articleFile, destinationFile)
 
   test("getNewsArticles returns DataFrame with correct size"){
     val result1 = dao.getNewsArticles(Some(20))
@@ -29,6 +30,8 @@ class DAOTest extends AnyFunSuite{
     assert(result1.count() === 20)
     val result2 = dao.getNewsArticles(Some(200))
     assert(result2.count() === 100)
+    val result3 = dao.getNewsArticles()
+    assert(result3.count() === 100)
   }
 
   test("getNewsArticles returns DataFrame with correct columns only"){
@@ -48,9 +51,13 @@ class DAOTest extends AnyFunSuite{
     assert(!res.columns.contains("links"))
   }
 
-  test("writeArticles writes DataFrame to File"){
+  test("writeAnnotatedArticles writes DataFrame to File"){
+    val destFile = new File(destinationFile)
+    if(destFile.exists()){
+      new Directory(new File(destinationFile)).deleteRecursively()
+    }
     val dfToWrite = dao.getNewsArticles(Some(5))
-    dao.writeArticles(dfToWrite)
+    dao.writeAnnotatedArticles(dfToWrite)
     assert(new File(destinationFile).exists())
   }
 }

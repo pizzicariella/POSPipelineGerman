@@ -13,8 +13,6 @@ libraryDependencies ++=Seq(
 
   "org.mongodb.spark" %% "mongo-spark-connector" % "2.4.2",
 
-  "org.mongodb.scala" %% "mongo-scala-driver" % "2.9.0",
-
   "com.typesafe" % "config" % "1.4.1",
 
   "org.scalactic" %% "scalactic" % "3.2.2",
