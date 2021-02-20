@@ -68,8 +68,7 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
       tokenizer,
       normalizer,
       posTagger,
-      lemmatizer,
-      finisher
+      lemmatizer
     ))
 
   override def train(articles: DataFrame, write: Option[String] = None ): PipelineModel = {

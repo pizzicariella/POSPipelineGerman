@@ -11,18 +11,28 @@ import scala.io.Source
 
 object EvaluationRunner {
 
-  val articlesToEvaluate = ConfigFactory.load().getString("app.file_eval")
-  val testPosTags = ConfigFactory.load().getString("app.pos_tags_eval")
-  val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
+  //val articlesToEvaluate = ConfigFactory.load().getString("app.file_eval")
+  //val testPosTags = ConfigFactory.load().getString("app.pos_tags_eval")
+  //val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
   def main(args: Array[String]): Unit = {
+
     val spark: SparkSession = SparkSession
       .builder()
       .appName("POSPipelineGerman")
       .master("local[*]")
       .getOrCreate()
 
-    import spark.implicits._
+    val dao = new FileDao(spark, "src/main/resources/evaluation/testArticles", "src/main/resources/evaluation/testAnnotatedArticles")
+    val articles = dao.getNewsArticles()
+    val preparedArticles = Conversion.prepareArticlesForPipeline(articles)
+    val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+    val annotated = pipeline.annotate(preparedArticles, "src/main/resources/models/posPipelineModel")
+    annotated.select("token", "normalized")show(false)
+    val preparedAnnotated = Conversion.prepareArticlesForSaving(annotated)
+    dao.writeAnnotatedArticles(preparedAnnotated)
+
+   /* import spark.implicits._
 
     val dao = new FileDao(spark, articlesToEvaluate, "none")
 
@@ -50,7 +60,7 @@ object EvaluationRunner {
     val evaluator = new PipelineEvaluator
     //val accuracy = evaluator.getAccuracy(testAnnotations, correctPosTags)
     //println("accuracy: "+accuracy)
-    //println(evaluator.compare(testAnnotations, correctPosTags))
+    //println(evaluator.compare(testAnnotations, correctPosTags))*/
   }
 
   def readTestFile(path: String): List[String] = {

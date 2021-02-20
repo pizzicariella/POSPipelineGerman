@@ -1,7 +1,11 @@
 package evaluation
 
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import pipeline.pos.PosPipeline
+import utils.Conversion
+
 //TODO refactor
-class PipelineEvaluator extends Evaluator {
+class PipelineEvaluator(val spark: SparkSession) extends Evaluator {
 
   //TODO should this method work with spark sql? (df)
   override def getAccuracy(annotated: List[List[String]], correct: List[List[String]]): Double = {
@@ -16,6 +20,12 @@ class PipelineEvaluator extends Evaluator {
       .reduce(_+_)
 
     annosCorrect.toDouble / annosTotal
+  }
+
+  def evaluateModel(testArticles: DataFrame): Unit ={
+    val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+    val annotated = pipeline.annotate(testArticles, "src/main/resources/models/posPipelineModel")
+    val annotatedFinal = Conversion.prepareArticlesForSaving(annotated)
   }
 
   override def compare(annotated: List[List[String]], correct: List[List[String]]): List[List[(String, String)]] = {
