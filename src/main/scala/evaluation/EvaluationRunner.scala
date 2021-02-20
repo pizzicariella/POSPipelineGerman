@@ -28,9 +28,9 @@ object EvaluationRunner {
     val preparedArticles = Conversion.prepareArticlesForPipeline(articles)
     val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
     val annotated = pipeline.annotate(preparedArticles, "src/main/resources/models/posPipelineModel")
-    annotated.select("token", "normalized")show(false)
-    val preparedAnnotated = Conversion.prepareArticlesForSaving(annotated)
-    dao.writeAnnotatedArticles(preparedAnnotated)
+    annotated.select("normalized")show(false)
+    //val preparedAnnotated = Conversion.prepareArticlesForSaving(annotated)
+    //dao.writeAnnotatedArticles(preparedAnnotated)
 
    /* import spark.implicits._
 
