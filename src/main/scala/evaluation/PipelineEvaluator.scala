@@ -1,55 +1,34 @@
 package evaluation
 
+import org.apache.spark.sql.functions.{arrays_zip, col, expr}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
-//TODO refactor
+//TODO Test
 class PipelineEvaluator(val spark: SparkSession) extends Evaluator {
 
-  //TODO should this method work with spark sql? (df)
-  override def getAccuracy(annotated: List[List[String]], correct: List[List[String]]): Double = {
-    val annosTotal = annotated.map(list => list.size).reduce(_+_)
-    val annosCorrect = annotated.zip(correct)
-      .map(lists => lists._1.zip(lists._2)
-      .map(anno => anno._1 match {
-        case x if x.equals(anno._2) => 1
-        case _ => 0
-      })
-      .reduce(_+_))
-      .reduce(_+_)
-
-    annosCorrect.toDouble / annosTotal
-  }
-
-  def evaluateModel(testArticles: DataFrame): Unit ={
+  override def evaluateModel(testArticles: DataFrame, goldStandard: DataFrame, pathToModel: String): DataFrame ={
     val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
-    val annotated = pipeline.annotate(testArticles, "src/main/resources/models/posPipelineModel")
+    val preparedArticles = Conversion.prepareArticlesForPipeline(testArticles)
+    val annotated = pipeline.annotate(preparedArticles, pathToModel)
     val annotatedFinal = Conversion.prepareArticlesForSaving(annotated)
+    annotatedFinal
+      .select("_id", "pos", "lemma")
+      .join(goldStandard
+        .select("_id", "pos", "lemma")
+        .withColumnRenamed("pos", "pos_gold")
+        .withColumnRenamed("lemma", "lemma_gold"), "_id")
+      .withColumn("pos_zipped", arrays_zip(col("pos"), col("pos_gold")))
+      .withColumn("lemma_zipped", arrays_zip(col("lemma"), col("lemma_gold")))
+      .withColumn("pos_mapped",
+        expr("transform(pos_zipped, x -> int(if(x.pos.tag == x.pos_gold.tag, 1, 0)))"))
+      .withColumn("lemma_mapped",
+        expr("transform(lemma_zipped, x -> int(if(x.lemma.result == x.lemma_gold.result, 1, 0)))"))
+      .withColumn("accuracy_pos",
+        expr("double(aggregate(pos_mapped, 0, (acc, val) -> acc + val)) / size(pos_mapped)"))
+      .withColumn("accuracy_lemma",
+        expr("double(aggregate(lemma_mapped, 0, (acc, val) -> acc + val)) / size(lemma_mapped)"))
+      .select("_id","accuracy_pos", "accuracy_lemma")
   }
-
-  override def compare(annotated: List[List[String]], correct: List[List[String]]): List[List[(String, String)]] = {
-    if (annotated.size != correct.size) {
-      println("Number of analyzed documents does not match.")
-    }
-
-    val combined = annotated.zip(correct)
-
-    combined
-      .map(lists => equalListSize(lists._1, lists._2))
-      .zipWithIndex
-      .foreach(x => x._1 match {
-        case true => println("Document "+x._2+": Number of annotations is equal")
-        case false => println("Document "+x._2+": Number of annotations is not equal")
-    })
-
-    combined.map(lists => lists._1.zip(lists._2))
-  }
-
-  def equalListSize(l1: List[String], l2: List[String]): Boolean = {
-    if(l1.size == l2.size){
-      true
-    } else false
-  }
-
 }
