@@ -8,12 +8,9 @@ import utils.Conversion
 //TODO Test
 class PosPipelineEvaluator(val spark: SparkSession) extends Evaluator {
 
-  override def evaluateModel(testArticles: DataFrame, goldStandard: DataFrame, pathToModel: String): DataFrame ={
-    val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
-    val preparedArticles = Conversion.prepareArticlesForPipeline(testArticles)
-    val annotated = pipeline.annotate(preparedArticles, pathToModel)
-    val annotatedFinal = Conversion.prepareArticlesForSaving(annotated)
-    annotatedFinal
+  override def evaluateModel(testArticles: DataFrame, goldStandard: DataFrame): DataFrame ={
+
+    testArticles
       .select("_id", "pos", "lemma")
       .join(goldStandard
         .select("_id", "pos", "lemma")

@@ -1,4 +1,4 @@
-package coponentIntegration
+package componentIntegration
 
 import com.typesafe.config.ConfigFactory
 import daos.memory.FileDao
