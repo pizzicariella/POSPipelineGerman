@@ -1,11 +1,8 @@
 package evaluation
 
 import org.apache.spark.sql.functions.{arrays_zip, col, expr}
-import org.apache.spark.sql.{DataFrame, SparkSession}
-import pipeline.pos.PosPipeline
-import utils.Conversion
+import org.apache.spark.sql.DataFrame
 
-//TODO Test
 class PosPipelineEvaluator() extends Evaluator {
 
   override def evaluateModel(testArticles: DataFrame, goldStandard: DataFrame): DataFrame ={
