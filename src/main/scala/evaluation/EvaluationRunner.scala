@@ -26,7 +26,7 @@ object EvaluationRunner {
     val preparedArticles = Conversion.prepareArticlesForPipeline(testArticles)
     val annotated = pipeline.annotate(preparedArticles, "src/main/resources/models/posPipelineModel")
     val preparedAnnotated = Conversion.prepareArticlesForSaving(annotated)
-    val evaluator = new PosPipelineEvaluator(spark)
+    val evaluator = new PosPipelineEvaluator()
     val modelAccuracyDf = evaluator.evaluateModel(preparedAnnotated, goldStandard)
     modelAccuracyDf.foreach(row => "article: " + println(row.getStruct(0).getString(0) +
       " - accuracy POS-Tags: " + row.getDouble(1) + " - accuracy Lemmas: " + row.getDouble(2)))

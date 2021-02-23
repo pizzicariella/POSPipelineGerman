@@ -6,7 +6,7 @@ import pipeline.pos.PosPipeline
 import utils.Conversion
 
 //TODO Test
-class PosPipelineEvaluator(val spark: SparkSession) extends Evaluator {
+class PosPipelineEvaluator() extends Evaluator {
 
   override def evaluateModel(testArticles: DataFrame, goldStandard: DataFrame): DataFrame ={
 
