@@ -98,8 +98,6 @@ class ConversionTest extends AnyFunSuite{
 
   val articlesAfterPipelineDf = spark.createDataFrame(spark.sparkContext.parallelize(articlesAfterPipeline), scheme)
 
-  //val replacements = Seq((" ", " "), ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
-
   test("prepareArticlesForPipeline should create new text column and drop title and intro"){
     val result = Conversion.prepareArticlesForPipeline(articlesBeforeConversion)
     assert(result.isInstanceOf[DataFrame])

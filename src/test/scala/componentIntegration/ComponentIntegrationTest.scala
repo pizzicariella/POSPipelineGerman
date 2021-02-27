@@ -1,13 +1,9 @@
 package componentIntegration
 
-import com.typesafe.config.ConfigFactory
 import daos.memory.FileDao
-import org.apache.hadoop.mapred.InvalidInputException
-import org.apache.spark.ml.PipelineModel
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
-import training.pos.PosTrainer
 import utils.Conversion
 
 import java.io.File
