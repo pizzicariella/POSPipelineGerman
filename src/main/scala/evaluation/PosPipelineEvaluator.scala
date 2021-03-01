@@ -25,4 +25,22 @@ class PosPipelineEvaluator() extends Evaluator {
         expr("double(aggregate(lemma_mapped, 0, (acc, val) -> acc + val)) / size(lemma_mapped)"))
       .select("_id","accuracy_pos", "accuracy_lemma")
   }
+
+  override def evaluationForTags(testArticles: DataFrame, goldStandard: DataFrame, posTagList: List[String]): DataFrame = {
+    val filterExpr = posTagList
+        .foldLeft("filter(pos_zipped, x -> ")((str, tag) => str+"x.pos_gold.tag == \""+tag+"\" or ")
+        .dropRight(3) + ")"
+
+    testArticles.select("_id", "pos")
+      .join(goldStandard
+        .select("_id", "pos")
+        .withColumnRenamed("pos", "pos_gold"), "_id")
+      .withColumn("pos_zipped", arrays_zip(col("pos"), col("pos_gold")))
+      .withColumn("pos_zipped", expr(filterExpr))
+      .withColumn("pos_mapped",
+        expr("transform(pos_zipped, x -> int(if(x.pos.tag == x.pos_gold.tag, 1, 0)))"))
+      .withColumn("accuracy_pos_selected",
+        expr("double(aggregate(pos_mapped, 0, (acc, val) -> acc + val)) / size(pos_mapped)"))
+        .select("_id", "accuracy_pos_selected")
+  }
 }
