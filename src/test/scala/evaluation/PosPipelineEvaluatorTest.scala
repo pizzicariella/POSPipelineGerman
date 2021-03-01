@@ -60,9 +60,9 @@ class PosPipelineEvaluatorTest extends AnyFunSuite{
 
   val testArticlesDf = spark.createDataFrame(spark.sparkContext.parallelize(testArticles), scheme)
   val goldStandardDf = spark.createDataFrame(spark.sparkContext.parallelize(goldStandard), scheme)
+  val evaluator = new PosPipelineEvaluator()
 
   test("evaluateModel should calculate accuracy correctly"){
-    val evaluator = new PosPipelineEvaluator()
     val accuracyDf = evaluator.evaluateModel(testArticlesDf, goldStandardDf)
     val resultTestArticle1 = accuracyDf
       .select("accuracy_pos", "accuracy_lemma")
@@ -78,5 +78,47 @@ class PosPipelineEvaluatorTest extends AnyFunSuite{
     assert(lemmaAccuracyTestArticle1 == 0.6)
     assert(posAccuracyTestArticle2 == 0.6666666666666666)
     assert(lemmaAccuracyTestArticle2 == 0.8333333333333334)
+  }
+
+  test("evaluationForTags should calculate accuracy correctly for multiple tags"){
+    val resultDf = evaluator.evaluationForTags(testArticlesDf, goldStandardDf, List("PRON", "DET", "NOUN"))
+    val resultTestArticle1 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId1'")
+    val resultTestArticle2 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId2'")
+    val accuracyTestArticle1 = resultTestArticle1.head().getDouble(0)
+    val accuracyTestArticle2 = resultTestArticle2.head().getDouble(0)
+    assert(accuracyTestArticle1 == 0.75)
+    assert(accuracyTestArticle2 == 0.75)
+  }
+
+  test("evaluationForTags should contain null for not existing tag"){
+    val resultDf = evaluator.evaluationForTags(testArticlesDf, goldStandardDf, List("ADV"))
+    val resultTestArticle1 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId1'")
+    val resultTestArticle2 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId2'")
+    val accuracyTestArticle1 = resultTestArticle1.head().get(0)
+    val accuracyTestArticle2 = resultTestArticle2.head().getDouble(0)
+    assert(accuracyTestArticle1 == null)
+    assert(accuracyTestArticle2 == 0.0)
+  }
+
+  test("evaluationForTags should calculate accuracy correctly for single tag"){
+    val resultDf = evaluator.evaluationForTags(testArticlesDf, goldStandardDf, List("NOUN"))
+    val resultTestArticle1 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId1'")
+    val resultTestArticle2 = resultDf
+      .select("accuracy_pos_selected")
+      .where("_id='testId2'")
+    val accuracyTestArticle1 = resultTestArticle1.head().getDouble(0)
+    val accuracyTestArticle2 = resultTestArticle2.head().getDouble(0)
+    assert(accuracyTestArticle1 == 0.5)
+    assert(accuracyTestArticle2 == 0.5)
   }
 }
