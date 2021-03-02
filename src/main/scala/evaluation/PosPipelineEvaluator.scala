@@ -26,6 +26,7 @@ class PosPipelineEvaluator() extends Evaluator {
       .select("_id","accuracy_pos", "accuracy_lemma")
   }
 
+  //TODO exception if tag does not exist in gs
   override def evaluationForTags(testArticles: DataFrame, goldStandard: DataFrame, posTagList: List[String]): DataFrame = {
     val filterExpr = posTagList
         .foldLeft("filter(pos_zipped, x -> ")((str, tag) => str+"x.pos_gold.tag == \""+tag+"\" or ")
@@ -39,8 +40,8 @@ class PosPipelineEvaluator() extends Evaluator {
       .withColumn("pos_zipped", expr(filterExpr))
       .withColumn("pos_mapped",
         expr("transform(pos_zipped, x -> int(if(x.pos.tag == x.pos_gold.tag, 1, 0)))"))
-      .withColumn("accuracy_pos_selected",
+      .withColumn("recall_pos_selected",
         expr("double(aggregate(pos_mapped, 0, (acc, val) -> acc + val)) / size(pos_mapped)"))
-        .select("_id", "accuracy_pos_selected")
+        .select("_id", "recall_pos_selected")
   }
 }
