@@ -4,6 +4,7 @@ import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
 import daos.memory.FileDao
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions.{col, expr, struct}
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
@@ -37,28 +38,32 @@ object OriginalApp {
       .config("spark.driver.memory", "12g")
       .getOrCreate()
 
-    //val dao = new DbDao(userName, pw, serverAddress, port, db, spark)
-    //val dao = new DbDao(spark)
-    val dao = new FileDao(spark, "src/test/resources/inMemoryArticles", "none")
+    val dao = new DbDao(spark)
+    val fileDao = new FileDao(spark, "none", "src/main/resources/annotatedArticles")
     val articles = dao.getNewsArticles(Some(200))
-
-    val replacements = Seq(//(" ", " "),
-     ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
 
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark, posModel)
-    val annotations = posPipeline.runPipeline(articlesWithText)
+    //val annotations = posPipeline.runPipeline(articlesWithText)
     //val annotations = posPipeline.runPipeline(articles)
+    val annotations = posPipeline.annotate(articlesWithText, "src/main/resources/models/posPipelineModel")
     //annotations.select("lemma").show(false)
 
-    annotations.printSchema()
+    //annotations.printSchema()
 
 
 
     val prepared = Conversion.prepareArticlesForSaving(annotations)
-
     prepared.printSchema()
+    val adjustedSchema = prepared.withColumn("crawl_time",
+      struct(col("crawl_time").cast("long").alias("$date")))
+      .withColumnRenamed("pos_percentage", "posPercentage")
+    adjustedSchema.printSchema()
+
+    fileDao.writeAnnotatedArticles(adjustedSchema)
+
+
 
     //annotations.select("text","pos", "lemma").show(true)
     //annotations.printSchema()

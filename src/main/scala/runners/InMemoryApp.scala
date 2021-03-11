@@ -23,8 +23,6 @@ object InMemoryApp {
 
     val dao = new FileDao(spark, articleFile, targetFile)
     val articles = dao.getNewsArticles(Some(200))
-    val replacements = Seq((" ", " "),
-      ("(?<=[^A-Z\\d])\\b\\.\\b", ". "))
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark, posModel)
