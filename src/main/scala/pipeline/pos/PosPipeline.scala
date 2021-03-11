@@ -23,13 +23,11 @@ class PosPipeline(val spark: SparkSession, posModel: String) extends PipelineTra
     .setInputCols("document")
     .setOutputCol("sentence")
 
-  //TODO check if patterns are arbitrary because of normalizer --> looks like it is, but not sure yet
   val tokenizer = new Tokenizer()
     .setInputCols(Array("sentence"))
     .setOutputCol("token")
     //.addSplitChars(" ")
-    //TODO Dies sollte das replace in der Vorverarbeitung der Artikel unnötig machen (nochmal prüfen)
-    .setSplitPattern("(?<=[^A-Z\\d])\\b\\.\\b|[\\s ]")
+    .setSplitPattern("(?<=[^A-Z\\d])\\.\\b|[\\s ]")
     //.setSuffixPattern("([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)\\z")
     //.setPrefixPattern("\\A([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]?)([^\\s\\w\\d\\ü\\Ü\\ö\\Ö\\ä\\Ä\\ß\\Ø\\ø\\-]*)")
 
