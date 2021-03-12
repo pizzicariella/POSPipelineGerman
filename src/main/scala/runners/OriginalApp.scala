@@ -4,7 +4,7 @@ import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
 import daos.memory.FileDao
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.functions.{col, expr, struct}
+import org.apache.spark.sql.functions.{col, struct}
 import pipeline.pos.PosPipeline
 import utils.Conversion
 
@@ -25,8 +25,6 @@ object OriginalApp {
     val targetDb = ConfigFactory.load().getString("app.target_db")
     //val targetCollectionName = ConfigFactory.load().getString(Strings.targetDbConfigCollection)
 
-    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
-
     val spark: SparkSession = SparkSession
       .builder()
       .appName("POSPipelineGerman")
@@ -44,7 +42,7 @@ object OriginalApp {
 
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
-    val posPipeline = new PosPipeline(spark, posModel)
+    val posPipeline = new PosPipeline(spark)
     //val annotations = posPipeline.runPipeline(articlesWithText)
     //val annotations = posPipeline.runPipeline(articles)
     val annotations = posPipeline.annotate(articlesWithText, "src/main/resources/models/posPipelineModel")

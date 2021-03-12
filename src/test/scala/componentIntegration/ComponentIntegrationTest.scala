@@ -23,7 +23,7 @@ class ComponentIntegrationTest extends AnyFunSuite{
   val path = "src/test/resources/writeModelTest"
   val destination = "src/test/resources/writeTest"
   val dao = new FileDao(spark, articleFile, destination)
-  val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+  val pipeline = new PosPipeline(spark)
   val articles = dao.getNewsArticles(Some(20))
   val convertedArticles = Conversion.prepareArticlesForPipeline(articles)
 

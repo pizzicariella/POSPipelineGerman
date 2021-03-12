@@ -11,7 +11,6 @@ object InMemoryApp {
 
     val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
     val targetFile = ConfigFactory.load().getString("app.target_inmemoryfile")
-    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
 
     val spark: SparkSession = SparkSession
       .builder()
@@ -22,15 +21,15 @@ object InMemoryApp {
       .getOrCreate()
 
     val dao = new FileDao(spark, articleFile, targetFile)
-    val articles = dao.getNewsArticles(Some(200))
+    val articles = dao.getNewsArticles(Some(50))
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
-    val posPipeline = new PosPipeline(spark, posModel)
+    val posPipeline = new PosPipeline(spark)
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
     val annotatedArticles = Conversion.prepareArticlesForSaving(annotations)
 
-    dao.writeAnnotatedArticles(annotatedArticles)
+    //dao.writeAnnotatedArticles(annotatedArticles)
   }
 }

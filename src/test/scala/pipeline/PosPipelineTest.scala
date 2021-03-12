@@ -26,7 +26,7 @@ class PosPipelineTest extends AnyFunSuite{
     ("testId2", 1575834315000L, "test intro 2", "test title 2", "test text 2", "www.test/long.de"),
     ("testId3", 1575834315067L, "test intro 3", "test title 3", "test text 3", "www.test/long.de")
   ).toDF("_id",  "crawl_time", "intro", "title", "text", "long_url")
-  val posPipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+  val posPipeline = new PosPipeline(spark)
   val destination = "src/test/resources/writeModelTest"
 
   test("runPipeline should return DataFrame with necessary columns"){

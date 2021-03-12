@@ -22,7 +22,7 @@ object EvaluationRunner {
     val dao = new FileDao(spark, pathTestArticles, "none")
     val testArticles = dao.getNewsArticles()
     val goldStandard = spark.read.json(pathGoldStandard)
-    val pipeline = new PosPipeline(spark, "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570")
+    val pipeline = new PosPipeline(spark)
     val preparedArticles = Conversion.prepareArticlesForPipeline(testArticles)
     val annotated = pipeline.annotate(preparedArticles, "src/main/resources/models/posPipelineModel")
     val preparedAnnotated = Conversion.prepareArticlesForSaving(annotated)

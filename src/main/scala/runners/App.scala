@@ -39,8 +39,7 @@ object App {
 
     val dao = new DbDao(spark)
     val articlesWithText = Conversion.prepareArticlesForPipeline(dao.getNewsArticles(None))
-    val posModel = ConfigFactory.load().getString("app.pos_tagger_model")
-    val pipe = new PosPipeline(spark, posModel)
+    val pipe = new PosPipeline(spark)
     pipe.train(articlesWithText, Some("src/main/resources/models/posPipelineModel"))
     //val annotatedArticles = pipe.runPipeline(articlesWithText, Some(path))
     //val finalDf = Conversion.prepareArticlesForSaving(annotatedArticles)

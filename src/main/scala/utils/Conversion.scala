@@ -50,7 +50,6 @@ object Conversion {
 
   private def createPosPercentageColumn(df: DataFrame): DataFrame = {
 
-    //TODO vielleicht doch mit aggregate möglich
     val getPosPercentage = (annos: Seq[String]) => {
       annos.foldLeft(Map.empty[String, Double])((map, anno) => map.updated(anno, map.getOrElse(anno, 0.0)+1.0))
         .mapValues(_/annos.size)
