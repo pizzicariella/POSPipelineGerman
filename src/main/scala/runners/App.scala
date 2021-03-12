@@ -4,7 +4,6 @@ import com.typesafe.config.ConfigFactory
 import daos.db.DbDao
 import org.apache.spark.sql.SparkSession
 import pipeline.pos.PosPipeline
-import training.pos.PosTrainer
 import utils.Conversion
 
 object App {

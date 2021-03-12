@@ -73,8 +73,7 @@ class PosPipeline(val spark: SparkSession) extends PipelineTrait{
     }
   }
 
-  override def annotate(articles: DataFrame,
-                        path: String): DataFrame = {
+  override def annotate(articles: DataFrame, path: String): DataFrame = {
     val model = PipelineModel.load(path)
     model.transform(articles)
   }

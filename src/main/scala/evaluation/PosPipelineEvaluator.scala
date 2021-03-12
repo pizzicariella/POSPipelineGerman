@@ -42,6 +42,5 @@ class PosPipelineEvaluator() extends Evaluator {
       .withColumn("recall_pos_selected",
         expr("double(aggregate(pos_mapped, 0, (acc, val) -> acc + val)) / size(pos_mapped)"))
       .select("_id", "recall_pos_selected")
-
   }
 }

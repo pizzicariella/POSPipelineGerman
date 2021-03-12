@@ -8,7 +8,6 @@ object Conversion {
 
   def prepareArticlesForPipeline(articles: DataFrame): DataFrame = {
     val dfWithTextColumn = createNewTextColumn(articles)
-    //val replaced = replace(dfWithTextColumn, replacements)
     removeEmptyTextStrings(dfWithTextColumn)
   }
 
