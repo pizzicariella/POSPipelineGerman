@@ -9,8 +9,8 @@ import utils.Conversion
 object InMemoryApp {
   def main(args: Array[String]): Unit = {
 
-    val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
-    val targetFile = ConfigFactory.load().getString("app.target_inmemoryfile")
+    //val articleFile = ConfigFactory.load().getString("app.inmemoryfile_test")
+    //val targetFile = ConfigFactory.load().getString("app.target_inmemoryfile")
 
     val spark: SparkSession = SparkSession
       .builder()
@@ -20,15 +20,18 @@ object InMemoryApp {
       .config("spark.driver.memory", "12g")
       .getOrCreate()
 
-    val dao = new FileDao(spark, articleFile, targetFile)
-    val articles = dao.getNewsArticles(Some(50))
+    val dao = new FileDao(spark,
+      "src/test/resources/inMemoryArticles",
+      "src/main/resources/annotatedArticles")
+    val articles = dao.getNewsArticles()
     val articlesWithText = Conversion.prepareArticlesForPipeline(articles)
 
     val posPipeline = new PosPipeline(spark)
 
     val annotations = posPipeline.runPipeline(articlesWithText)
 
-    val annotatedArticles = Conversion.prepareArticlesForSaving(annotations)
+    //val annotatedArticles = Conversion.prepareArticlesForSaving(annotations)
+    annotations.select("normalized").show(false)
 
     //dao.writeAnnotatedArticles(annotatedArticles)
   }
