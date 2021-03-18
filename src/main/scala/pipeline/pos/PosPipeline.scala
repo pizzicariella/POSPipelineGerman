@@ -9,8 +9,13 @@ import pipeline.PipelineTrait
 
 class PosPipeline(val spark: SparkSession) extends PipelineTrait{
 
-  val lemmatizerModel = "src/main/resources/models/lemma_de_2.0.8_2.4_1561248996126"
-  val posModel = "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570"
+  //only in dev mode
+  //val lemmatizerModel = "src/main/resources/models/lemma_de_2.0.8_2.4_1561248996126"
+  //val posModel = "src/main/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570"
+
+  //only in prod mode
+  val lemmatizerModel = "SparkNLP/resources/models/lemma_de_2.0.8_2.4_1561248996126"
+  val posModel = "SparkNLP/resources/models/pos_ud_hdt_de_2.0.8_2.4_1561232528570"
 
   /*Clean everything but higher and lower case letters, including ä,ö,ü,ß,Ø,ø,ć - numbers and super/subscript.
   Dont't remove , . - / : if a number follows. Don't remove - if letter or number follows.

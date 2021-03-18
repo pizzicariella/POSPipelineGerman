@@ -30,8 +30,8 @@ object EvaluationRunner {
     val modelAccuracyDf = evaluator.evaluateModel(preparedAnnotated, goldStandard)
     modelAccuracyDf.foreach(row => println("article: " + row.getStruct(0).getString(0) +
       " - accuracy POS-Tags: " + row.getDouble(1) + " - accuracy Lemmas: " + row.getDouble(2)))
-    val posTagsAccuracyDf = evaluator.evaluationForTags(preparedAnnotated, goldStandard,
-     List("ADJ, NOUN, VERB"))
-    posTagsAccuracyDf.foreach(row => println("article: "+ row.getStruct(0).getString(0) + ", accuracy: "+row.getDouble(1)))
+    val posTagsRecallDf = evaluator.evaluationForTags(preparedAnnotated, goldStandard,
+     List("X"))
+    posTagsRecallDf.foreach(row => println("article: "+ row.getStruct(0).getString(0) + ", recall: "+row.getDouble(1)))
   }
 }
