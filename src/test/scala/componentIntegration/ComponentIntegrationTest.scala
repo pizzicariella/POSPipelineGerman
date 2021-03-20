@@ -5,7 +5,6 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.funsuite.AnyFunSuite
 import pipeline.pos.PosPipeline
 import utils.Conversion
-
 import java.io.File
 import scala.reflect.io.Directory
 

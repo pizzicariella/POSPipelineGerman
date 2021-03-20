@@ -3,14 +3,23 @@ package utils
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.{col, concat, expr, lit, regexp_replace, udf}
 
-
 object Conversion {
 
+  /**
+   * Prepares a DataFrame of news articles for Spark NLP pipeline
+   * @param articles DataFrame with news articles. Should contain columns 'title', 'intro' and 'text'
+   * @return Prepared DataFrame
+   */
   def prepareArticlesForPipeline(articles: DataFrame): DataFrame = {
     val dfWithTextColumn = createNewTextColumn(articles)
     removeEmptyTextStrings(dfWithTextColumn)
   }
 
+  /**
+   * Converts a DataFrame that has been transformed by Spark NLP pipeline into scheme to save it.
+   * @param articles DataFrame previously transformed by Spark NLP pipeline
+   * @return DataFrame with scheme for saving
+   */
   def prepareArticlesForSaving(articles: DataFrame): DataFrame = {
     val selected = articles.select(
       "_id",
@@ -24,8 +33,14 @@ object Conversion {
     createPosPercentageColumn(dropedNested)
   }
 
+  /**
+   * removes rows if text column is empty
+   */
   private def removeEmptyTextStrings(df: DataFrame): DataFrame = df.filter("text != ''")
 
+  /**
+   * Can recursively replace by patterns.
+   */
   private def replace(articlesDf: DataFrame,
               replacements: Seq[(String, String)]): DataFrame = {
 
@@ -38,6 +53,9 @@ object Conversion {
     replaceRecursively(articlesDf, replacements)
   }
 
+  /**
+   * Creates a column 'text' from columns 'title', 'intro' and 'text'
+   */
   private def createNewTextColumn(articles: DataFrame): DataFrame = {
     articles.withColumn("text", concat(col("title"),
       lit(" $§$ "),
@@ -47,6 +65,9 @@ object Conversion {
       .drop("title", "intro")
   }
 
+  /**
+   * Creates new column containing percentage for each pos tag
+   */
   private def createPosPercentageColumn(df: DataFrame): DataFrame = {
 
     val getPosPercentage = (annos: Seq[String]) => {
@@ -63,6 +84,9 @@ object Conversion {
 
   }
 
+  /**
+   * Transforms DataFrame by dropping nested columns that won't be needed any longer
+   */
   private def dropNestedColumns(df: DataFrame): DataFrame = {
     df.withColumn("pos",
         expr("transform(pos, x -> struct(x.begin as begin, x.end as end, x.result as tag))"))

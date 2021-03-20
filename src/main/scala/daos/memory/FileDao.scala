@@ -7,7 +7,6 @@ import org.apache.spark.sql.types.{LongType, TimestampType}
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import scala.reflect.io.Directory
 
-
 class FileDao(val spark: SparkSession, val sourceFile: String, val destinationFile: String) extends DAO{
 
   override def getNewsArticles(limit: Option[Int] = None): DataFrame = {
@@ -37,4 +36,3 @@ class FileDao(val spark: SparkSession, val sourceFile: String, val destinationFi
       articles.write.json(destinationFile)
   }
 }
-

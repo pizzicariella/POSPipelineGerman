@@ -31,7 +31,7 @@ object EvaluationRunner {
     modelAccuracyDf.foreach(row => println("article: " + row.getStruct(0).getString(0) +
       " - accuracy POS-Tags: " + row.getDouble(1) + " - accuracy Lemmas: " + row.getDouble(2)))
     val posTagsRecallDf = evaluator.evaluationForTags(preparedAnnotated, goldStandard,
-     List("X"))
+     List("ADJ", "NOUN", "VERB"))
     posTagsRecallDf.foreach(row => println("article: "+ row.getStruct(0).getString(0) + ", recall: "+row.getDouble(1)))
   }
 }

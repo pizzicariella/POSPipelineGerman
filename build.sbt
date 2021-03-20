@@ -17,11 +17,8 @@ libraryDependencies ++=Seq(
 
 Test / parallelExecution := false
 
-/*assemblyMergeStrategy in assembly := {
-  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x => MergeStrategy.first
-}*/
 test in assembly := {}
+
 assemblyMergeStrategy in assembly := {
   case PathList("META-INF", xs @ _*) => MergeStrategy.discard
   case "application.conf"            => MergeStrategy.concat
