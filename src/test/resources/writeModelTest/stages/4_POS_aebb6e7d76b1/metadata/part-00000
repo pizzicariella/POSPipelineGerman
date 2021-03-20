@@ -1,1 +1,1 @@
-{"class":"com.johnsnowlabs.nlp.annotators.pos.perceptron.PerceptronModel","timestamp":1615887827846,"sparkVersion":"2.4.7","uid":"POS_aebb6e7d76b1","paramMap":{"inputCols":["sentence","normalized"],"outputCol":"pos"},"defaultParamMap":{"lazyAnnotator":false}}
+{"class":"com.johnsnowlabs.nlp.annotators.pos.perceptron.PerceptronModel","timestamp":1616237476115,"sparkVersion":"2.4.7","uid":"POS_aebb6e7d76b1","paramMap":{"inputCols":["sentence","normalized"],"outputCol":"pos"},"defaultParamMap":{"lazyAnnotator":false}}
